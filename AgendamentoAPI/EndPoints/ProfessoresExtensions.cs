@@ -1,6 +1,7 @@
 ﻿using Agendamentos.Requests;
 using Agendamentos.Response;
 using Agendamentos.Shared.Dados.Database;
+using Agendamentos.Shared.Dados.Modelos;
 using Agendamentos.Shared.Modelos.Modelos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -39,14 +40,14 @@ namespace Agendamentos.EndPoints
 
             });
 
-            groupBuilder.MapPost("", async ([FromServices] IHostEnvironment env, [FromServices] DAL<Professores> dal, [FromServices] UserManager<IdentityUser> userManager, [FromBody] ProfessoresRequest professoresRequest) =>
+            groupBuilder.MapPost("", async ([FromServices] IHostEnvironment env, [FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromBody] ProfessoresRequest professoresRequest) =>
             {
                 if (professoresRequest.senha != professoresRequest.confirmacaoSenha)
                 {
                     return Results.BadRequest("A senha e a confirmação de senha não correspondem.");
                 }
 
-                var user = new IdentityUser { UserName = professoresRequest.email, Email = professoresRequest.email };
+                var user = new PessoaComAcesso { UserName = professoresRequest.email, Email = professoresRequest.email };
                 var result = await userManager.CreateAsync(user, professoresRequest.senha);
 
                 if (!result.Succeeded)

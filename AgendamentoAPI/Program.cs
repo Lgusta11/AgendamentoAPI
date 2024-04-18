@@ -2,6 +2,8 @@ using Agendamentos.EndPoints;
 using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Dados.Modelos;
 using Agendamentos.Shared.Modelos.Modelos;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -58,7 +60,7 @@ app.MapPost("auth/logout", async ([FromServices] SignInManager<PessoaComAcesso> 
     return Results.Ok();
 }).RequireAuthorization().WithTags("Autorização");
     
-}).MapIdentityApi
+
 
 app.UseSwagger();
 app.UseSwaggerUI();
