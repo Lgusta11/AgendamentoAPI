@@ -50,7 +50,15 @@ app.AddEndPointsAgendamentos();
 
 
 app.MapGroup("/auth").MapIdentityApi<PessoaComAcesso>()
-    .WithTags("Autentica��o");
+    .WithTags("Autenticação");
+
+app.MapPost("auth/logout", async ([FromServices] SignInManager<PessoaComAcesso> signInManager) =>
+{
+    await signInManager.SignOutAsync();
+    return Results.Ok();
+}).RequireAuthorization().WithTags("Autorização");
+    
+}).MapIdentityApi
 
 app.UseSwagger();
 app.UseSwaggerUI();
