@@ -60,10 +60,6 @@ namespace Agendamentos.EndPoints
     });
 
 
-
-
-
-
                 groupBuilder.MapDelete("{id}", ([FromServices] DAL<Agendamento> dal, int id) => {
                     var agendamento = dal.RecuperarPor(a => a.Id == id);
                     if (agendamento is null)
