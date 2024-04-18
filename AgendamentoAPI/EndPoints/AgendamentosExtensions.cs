@@ -26,15 +26,16 @@ namespace Agendamentos.EndPoints
                     return Results.Ok(listaDeAgendamentosResponse);
                 });
 
-                groupBuilder.MapGet("{id}", ([FromServices] DAL<Agendamento> dal, int id) =>
-                {
-                    var agendamento = dal.RecuperarPor(a => a.Id == id);
-                    if (agendamento is null)
-                    {
-                        return Results.NotFound();
-                    }
-                    return Results.Ok(new AgendamentoResponse(agendamento.Id, agendamento.Data, agendamento.AulaId, agendamento.EquipamentoId, agendamento.ProfessorId));
-                });
+               groupBuilder.MapGet("{id}", ([FromServices] DAL<Agendamento> dal, int professorId) =>
+{
+    var agendamentosDoProfessor = dal.Listar(a => a.ProfessorId == professorId);
+    if (!agendamentosDoProfessor.Any())
+    {
+        return Results.NotFound();
+    }
+    return Results.Ok(agendamentosDoProfessor.Select(a => new AgendamentoResponse(a.Id, a.Data, a.AulaId, a.EquipamentoId, a.ProfessorId)));
+});
+
 
                groupBuilder.MapPost("", async ([FromServices] DAL<Agendamento> dal, [FromServices] DAL<Equipamentos> EquipamentosDal, [FromBody] AgendamentoRequest agendamentoRequest) =>
 {
