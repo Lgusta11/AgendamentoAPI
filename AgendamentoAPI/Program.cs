@@ -15,9 +15,9 @@ builder.Services.AddIdentityApiEndpoints<PessoaComAcesso>()
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<DAL<Professores>>();
-//builder.Services.AddScoped<DAL<Equipamentos>>();
+builder.Services.AddScoped<DAL<Equipamentos>>();
 builder.Services.AddScoped<DAL<Aulas>>();
-//builder.Services.AddScoped<DAL<Agendamento>>();
+builder.Services.AddScoped<DAL<Agendamento>>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -45,8 +45,8 @@ app.UseAuthorization();
 
 app.AddEndPointsProfessores();
 app.AddEndPointsAulas();
-//app.AddEndPointsEquipamentos();
-//app.AddEndPointsAgendamentos();
+app.AddEndPointsEquipamentos();
+app.AddEndPointsAgendamentos();
 
 
 app.MapGroup("/auth").MapIdentityApi<PessoaComAcesso>()

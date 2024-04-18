@@ -8,8 +8,10 @@
         }
 
         public string Nome { get; set; }
+        public int Quantidade { get; set; }
         public int Id { get; set; }
         public virtual ICollection<Agendamento> Agendamentos { get; set; } = new List<Agendamento>();
+
 
     }
 

@@ -1,4 +1,7 @@
-﻿namespace Agendamentos.Shared.Dados.Database
+﻿using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+
+namespace Agendamentos.Shared.Dados.Database
 {
     public class DAL<T> where T : class
     {
@@ -28,6 +31,15 @@
             context.Set<T>().Remove(objeto);
             context.SaveChanges();
         }
+        public async Task<T?> RecuperarPorAsync(Expression<Func<T, bool>> condicao)
+        {
+            return await context.Set<T>().FirstOrDefaultAsync(condicao);
+        }
+        public List<T> Listar(Func<T, bool> predicate)
+        {
+            return context.Set<T>().Where(predicate).ToList();
+        }
+
 
         public T? RecuperarPor(Func<T, bool> condicao)
         {

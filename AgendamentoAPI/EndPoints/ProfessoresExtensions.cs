@@ -2,6 +2,7 @@
 using Agendamentos.Response;
 using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Modelos.Modelos;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Agendamentos.EndPoints
@@ -38,8 +39,20 @@ namespace Agendamentos.EndPoints
 
             });
 
-            groupBuilder.MapPost("", async ([FromServices] IHostEnvironment env, [FromServices] DAL<Professores> dal, [FromBody] ProfessoresRequest professoresRequest) =>
+            groupBuilder.MapPost("", async ([FromServices] IHostEnvironment env, [FromServices] DAL<Professores> dal, [FromServices] UserManager<IdentityUser> userManager, [FromBody] ProfessoresRequest professoresRequest) =>
             {
+                if (professoresRequest.senha != professoresRequest.confirmacaoSenha)
+                {
+                    return Results.BadRequest("A senha e a confirmação de senha não correspondem.");
+                }
+
+                var user = new IdentityUser { UserName = professoresRequest.email, Email = professoresRequest.email };
+                var result = await userManager.CreateAsync(user, professoresRequest.senha);
+
+                if (!result.Succeeded)
+                {
+                    return Results.BadRequest(result.Errors.Select(x => x.Description));
+                }
 
                 var nome = professoresRequest.nome.Trim();
                 var imagemProfessor = DateTime.Now.ToString("ddMMyyyyhhss") + "." + nome + ".jpg";
@@ -57,6 +70,7 @@ namespace Agendamentos.EndPoints
                 return Results.Ok();
             });
 
+
             groupBuilder.MapDelete("{id}", ([FromServices] DAL<Professores> dal, int id) => {
                 var Professores = dal.RecuperarPor(a => a.Id == id);
                 if (Professores is null)
@@ -68,16 +82,38 @@ namespace Agendamentos.EndPoints
 
             });
 
-            groupBuilder.MapPut("", ([FromServices] DAL<Professores> dal, [FromBody] ProfessoresRequestEdit ProfessoresRequestEdit) => {
-                var ProfessoresAAtualizar = dal.RecuperarPor(a => a.Id == ProfessoresRequestEdit.Id);
-                if (ProfessoresAAtualizar is null)
+            groupBuilder.MapPut("", async ([FromServices] DAL<Professores> dal, [FromServices] UserManager<IdentityUser> userManager, [FromBody] ProfessoresRequestEdit professoresRequestEdit) =>
+            {
+                var professoresAAtualizar = dal.RecuperarPor(a => a.Id == professoresRequestEdit.Id);
+                if (professoresAAtualizar is null)
                 {
                     return Results.NotFound();
                 }
-                ProfessoresAAtualizar.Nome = ProfessoresRequestEdit.nome;
-                dal.Atualizar(ProfessoresAAtualizar);
+
+                var user = await userManager.FindByEmailAsync(professoresAAtualizar.email!);
+                if (user == null)
+                {
+                    return Results.NotFound("Usuário não encontrado.");
+                }
+
+                // Atualiza o nome do professor
+                professoresAAtualizar.Nome = professoresRequestEdit.nome;
+
+                // Atualiza o email e a senha do usuário
+                user.Email = professoresRequestEdit.email;
+                user.UserName = professoresRequestEdit.email;
+                var passwordResetToken = await userManager.GeneratePasswordResetTokenAsync(user);
+                var passwordChangeResult = await userManager.ResetPasswordAsync(user, passwordResetToken, professoresRequestEdit.senha);
+
+                if (!passwordChangeResult.Succeeded)
+                {
+                    return Results.BadRequest(passwordChangeResult.Errors.Select(x => x.Description));
+                }
+
+                dal.Atualizar(professoresAAtualizar);
                 return Results.Ok();
             });
+
             #endregion
         }
 

@@ -8,6 +8,8 @@ namespace Agendamentos.Shared.Modelos.Modelos
 {
     public class Professores
     {
+        public string? email;
+
         public virtual ICollection<Agendamento> Agendamentos { get; set; } = new List<Agendamento>();
 
 
