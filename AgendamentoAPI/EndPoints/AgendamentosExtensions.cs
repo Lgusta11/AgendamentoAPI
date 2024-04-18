@@ -36,27 +36,28 @@ namespace Agendamentos.EndPoints
                     return Results.Ok(new AgendamentoResponse(agendamento.Id, agendamento.Data, agendamento.AulaId, agendamento.EquipamentoId, agendamento.ProfessorId));
                 });
 
-                groupBuilder.MapPost("", async ([FromServices] DAL<Agendamento> dal, [FromServices] DAL<Equipamentos> EquipamentosDal, [FromBody] AgendamentoRequest agendamentoRequest) =>
-                {
-                    var agendamentosExistenteEquipamento = dal.Listar(a => a.EquipamentoId == agendamentoRequest.EquipamentoId && a.Data == agendamentoRequest.Data);
-                    var equipamento = await EquipamentosDal.RecuperarPorAsync(e => e.Id == agendamentoRequest.EquipamentoId);
+               groupBuilder.MapPost("", async ([FromServices] DAL<Agendamento> dal, [FromServices] DAL<Equipamentos> EquipamentosDal, [FromBody] AgendamentoRequest agendamentoRequest) =>
+{
+    var agendamentosExistenteEquipamento = dal.Listar(a => a.EquipamentoId == agendamentoRequest.EquipamentoId && a.Data == agendamentoRequest.Data);
+    var equipamento = await EquipamentosDal.RecuperarPorAsync(e => e.Id == agendamentoRequest.EquipamentoId);
 
-                    // Verificar se o professor já tem um agendamento nas últimas 24 horas
-                    var agendamentoExistenteProfessor = dal.Listar(a => a.ProfessorId == agendamentoRequest.ProfessorId && a.Data > DateTime.Now.AddHours(-24));
-                    if (agendamentoExistenteProfessor.Any())
-                    {
-                        return Results.BadRequest("O professor já tem um agendamento nas últimas 24 horas.");
-                    }
+    // Verificar se o professor já tem um agendamento para a mesma aula no mesmo dia
+    var agendamentoExistenteProfessor = dal.Listar(a => a.ProfessorId == agendamentoRequest.ProfessorId && a.Data == agendamentoRequest.Data && a.AulaId == agendamentoRequest.AulaId);
+    if (agendamentoExistenteProfessor.Any())
+    {
+        return Results.BadRequest("O professor já tem um agendamento para a mesma aula nesta data.");
+    }
 
-                    if (agendamentosExistenteEquipamento.Count() >= equipamento?.Quantidade)
-                    {
-                        return Results.BadRequest("O equipamento já está totalmente agendado para esta data e horário.");
-                    }
+    if (agendamentosExistenteEquipamento.Count() >= equipamento?.Quantidade)
+    {
+        return Results.BadRequest("O equipamento já está totalmente agendado para esta data e horário.");
+    }
 
-                    var agendamento = new Agendamento { Data = agendamentoRequest.Data, AulaId = agendamentoRequest.AulaId, EquipamentoId = agendamentoRequest.EquipamentoId, ProfessorId = agendamentoRequest.ProfessorId };
-                    dal.Adicionar(agendamento);
-                    return Results.Ok();
-                });
+    var agendamento = new Agendamento { Data = agendamentoRequest.Data, AulaId = agendamentoRequest.AulaId, EquipamentoId = agendamentoRequest.EquipamentoId, ProfessorId = agendamentoRequest.ProfessorId };
+    dal.Adicionar(agendamento);
+    return Results.Ok();
+    });
+
 
 
 
