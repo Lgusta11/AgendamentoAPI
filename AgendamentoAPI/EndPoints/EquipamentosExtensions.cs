@@ -2,6 +2,7 @@
 using AgendamentoAPI.Response;
 using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Modelos.Modelos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Agendamentos.EndPoints
@@ -41,7 +42,7 @@ namespace Agendamentos.EndPoints
                     var equipamento = new Equipamentos(equipamentoRequest.Nome) { Quantidade = equipamentoRequest.Quantidade };
                     dal.Adicionar(equipamento);
                     return Results.Ok();
-                });
+                }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
                 groupBuilder.MapDelete("{id}", ([FromServices] DAL<Equipamentos> dal, int id) => {
                     var equipamento = dal.RecuperarPor(e => e.Id == id);
@@ -51,7 +52,7 @@ namespace Agendamentos.EndPoints
                     }
                     dal.Deletar(equipamento);
                     return Results.NoContent();
-                });
+                }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
                 groupBuilder.MapPut("", ([FromServices] DAL<Equipamentos> dal, [FromBody] EquipamentosRequestEdit equipamentoRequest) => {
                     var equipamentoAAtualizar = dal.RecuperarPor(e => e.Id == equipamentoRequest.Id);
@@ -63,7 +64,7 @@ namespace Agendamentos.EndPoints
                     equipamentoAAtualizar.Quantidade = equipamentoRequest.Quantidade;
                     dal.Atualizar(equipamentoAAtualizar);
                     return Results.Ok();
-                });
+                }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
             }
         }
     }

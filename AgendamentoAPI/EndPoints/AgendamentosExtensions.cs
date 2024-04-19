@@ -2,6 +2,7 @@
 using AgendamentoAPI.Response;
 using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Modelos.Modelos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Agendamentos.EndPoints
@@ -15,6 +16,8 @@ namespace Agendamentos.EndPoints
                 .RequireAuthorization()
                 .WithTags("Agendamentos");
 
+
+               
                 groupBuilder.MapGet("", ([FromServices] DAL<Agendamento> dal) =>
                 {
                     var listaDeAgendamentos = dal.Listar();
@@ -24,7 +27,7 @@ namespace Agendamentos.EndPoints
                     }
                     var listaDeAgendamentosResponse = listaDeAgendamentos.Select(a => new AgendamentoResponse(a.Id, a.Data, a.AulaId, a.EquipamentoId, a.ProfessorId)).ToList();
                     return Results.Ok(listaDeAgendamentosResponse);
-                });
+                }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
                groupBuilder.MapGet("{id}", ([FromServices] DAL<Agendamento> dal, int professorId) =>
 {

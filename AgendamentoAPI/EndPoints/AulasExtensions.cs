@@ -2,6 +2,7 @@
 using AgendamentoAPI.Response;
 using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Modelos.Modelos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Agendamentos.EndPoints
@@ -53,7 +54,7 @@ namespace Agendamentos.EndPoints
                 var aula = new Aulas(aulasRequest.Aula) { Duracao = TimeSpan.FromMinutes(50) };
                 dal.Adicionar(aula);
                 return Results.Ok();
-            });
+            }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
             groupBuilder.MapDelete("{id}", ([FromServices] DAL<Aulas> dal, int id) => {
                 var aula = dal.RecuperarPor(a => a.Id == id);
@@ -63,7 +64,7 @@ namespace Agendamentos.EndPoints
                 }
                 dal.Deletar(aula);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
             groupBuilder.MapPut("", ([FromServices] DAL<Aulas> dal, [FromBody] AulasRequestEdit aulasRequestEdit) => {
                 var aulaAAtualizar = dal.RecuperarPor(a => a.Id == aulasRequestEdit.Id);
@@ -74,7 +75,7 @@ namespace Agendamentos.EndPoints
                 aulaAAtualizar.Aula = aulasRequestEdit.Aula;
                 dal.Atualizar(aulaAAtualizar);
                 return Results.Ok();
-            });
+            }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
             #endregion
         }
 

@@ -3,6 +3,7 @@ using Agendamentos.Response;
 using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Dados.Modelos;
 using Agendamentos.Shared.Modelos.Modelos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,7 +28,7 @@ namespace Agendamentos.EndPoints
                 }
                 var listaDeProfessoresResponse = EntityListToResponseList(listaDeProfessores);
                 return Results.Ok(listaDeProfessoresResponse);
-            });
+            }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
             groupBuilder.MapGet("{nome}", ([FromServices] DAL<Professores> dal, string nome) =>
             {

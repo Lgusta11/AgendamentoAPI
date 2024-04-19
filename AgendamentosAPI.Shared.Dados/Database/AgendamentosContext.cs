@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Agendamentos.Shared.Dados.Database
 {
-    public class AgendamentosContext : IdentityDbContext<PessoaComAcesso, PerfilDeAcesso, int>
+    public class AgendamentosContext : IdentityDbContext<PessoaComAcesso, Admin, int>
     {
         public DbSet<Professores> Professores { get; set; }
         public DbSet<Equipamentos> Equipamentos { get; set; }
@@ -24,6 +24,10 @@ namespace Agendamentos.Shared.Dados.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            modelBuilder.Entity<Admin>()
+            .HasIndex(a => a.Email)
+            .IsUnique();
             // Configuração para a entidade IdentityUserRole<int>
             modelBuilder.Entity<IdentityUserRole<int>>()
                 .HasKey(ur => new { ur.UserId, ur.RoleId });
