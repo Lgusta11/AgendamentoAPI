@@ -1,4 +1,5 @@
-﻿using Agendamentos.Requests;
+﻿using AgendamentoAPI.Email;
+using Agendamentos.Requests;
 using Agendamentos.Response;
 using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Dados.Modelos;
@@ -6,6 +7,7 @@ using Agendamentos.Shared.Modelos.Modelos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+
 
 namespace Agendamentos.EndPoints
 {
@@ -41,7 +43,7 @@ namespace Agendamentos.EndPoints
 
             });
 
-            groupBuilder.MapPost("", async ([FromServices] IHostEnvironment env, [FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromBody] ProfessoresRequest professoresRequest) =>
+            app.MapPost("CadastroDeProfessor", async ([FromServices] IHostEnvironment env, [FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] DummyEmailSender emailSender, [FromServices] IUrlHelper urlHelper, [FromBody] ProfessoresRequest professoresRequest) =>
             {
                 if (professoresRequest.senha != professoresRequest.confirmacaoSenha)
                 {
@@ -69,6 +71,14 @@ namespace Agendamentos.EndPoints
                 var Professores = new Professores(professoresRequest.nome) { FotoPerfil = $"/FotosPerfil/{imagemProfessor}" };
 
                 dal.Adicionar(Professores);
+
+               
+                var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+                var confirmationLink = urlHelper.Action("ConfirmEmail", "Account", new { userId = user.Id, token = token }, urlHelper.ActionContext.HttpContext.Request.Scheme);
+
+                
+                await emailSender.SendConfirmationLinkAsync(user, user.Email, confirmationLink!);
+
                 return Results.Ok();
             });
 

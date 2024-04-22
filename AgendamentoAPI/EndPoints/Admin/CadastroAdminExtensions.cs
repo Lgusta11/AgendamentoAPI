@@ -1,6 +1,7 @@
 ﻿using AgendamentoAPI.Requests;
 using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Dados.Modelos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,9 +15,6 @@ namespace AgendamentoAPI.EndPoints.AdminCrud
                .RequireAuthorization()
                .WithTags("Admin");
 
-
-           
-
                 groupBuilder.MapGet("", ([FromServices] DAL<Admin> dal) =>
                 {
                     var listaDeAdmins = dal.Listar();
@@ -25,9 +23,9 @@ namespace AgendamentoAPI.EndPoints.AdminCrud
                         return Results.NotFound();
                     }
                     return Results.Ok(listaDeAdmins);
-                });
+                }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
-                groupBuilder.MapGet("{id}", ([FromServices] DAL<Admin> dal, int id) =>
+            groupBuilder.MapGet("{id}", ([FromServices] DAL<Admin> dal, int id) =>
                 {
                     var admin = dal.RecuperarPor(a => a.Id == id);
                     if (admin is null)
@@ -35,7 +33,7 @@ namespace AgendamentoAPI.EndPoints.AdminCrud
                         return Results.NotFound();
                     }
                     return Results.Ok(admin);
-                });
+                }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
             groupBuilder.MapPost("", async ([FromServices] DAL<Admin> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromBody] AdminRequest adminRequest) =>
             {
@@ -53,7 +51,7 @@ namespace AgendamentoAPI.EndPoints.AdminCrud
                 dal.Adicionar(admin);
 
                 return Results.Ok();
-            });
+            }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
             groupBuilder.MapPut("{id}", async ([FromServices] DAL<Admin> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromBody] AdminRequestEdit adminRequestEdit, int id) =>
                 {
@@ -82,9 +80,9 @@ namespace AgendamentoAPI.EndPoints.AdminCrud
                     dal.Atualizar(adminAAtualizar);
 
                     return Results.Ok();
-                });
+                }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
-                groupBuilder.MapDelete("{id}", ([FromServices] DAL<Admin> dal, int id) =>
+            groupBuilder.MapDelete("{id}", ([FromServices] DAL<Admin> dal, int id) =>
                 {
                     var admin = dal.RecuperarPor(a => a.Id == id);
                     if (admin is null)
@@ -93,8 +91,8 @@ namespace AgendamentoAPI.EndPoints.AdminCrud
                     }
                     dal.Deletar(admin);
                     return Results.NoContent();
-                });
-            }
+                }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
+        }
         }
     }
 

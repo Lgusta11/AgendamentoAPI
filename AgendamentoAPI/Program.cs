@@ -6,25 +6,20 @@ using Agendamentos.Shared.Dados.Modelos;
 using Agendamentos.Shared.Modelos.Modelos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AgendamentosContext>();
-
-
+builder.Services.AddScoped<PessoaComAcesso>();
 builder.Services.AddIdentity<PessoaComAcesso, Admin>()
     .AddEntityFrameworkStores<AgendamentosContext>()
     .AddDefaultTokenProviders();
-
-
+builder.Services.AddAuthorization();
 builder.Services.AddSingleton<IEmailSender<PessoaComAcesso>, DummyEmailSender>();
 
-builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<DAL<Professores>>();
 builder.Services.AddScoped<DAL<Equipamentos>>();
@@ -81,7 +76,7 @@ app.MapPost("auth/logout", async ([FromServices] SignInManager<PessoaComAcesso> 
 {
     await signInManager.SignOutAsync();
     return Results.Ok();
-}).RequireAuthorization().WithTags("Autorização");
+}).RequireAuthorization().WithTags("Autenticação");
 
 app.UseSwagger();
 app.UseSwaggerUI();

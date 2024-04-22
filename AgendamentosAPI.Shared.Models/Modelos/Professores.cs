@@ -23,9 +23,7 @@ namespace Agendamentos.Shared.Modelos.Modelos
         public string Nome { get; set; }
         public int Id { get; set; }
         public string FotoPerfil { get; set; }
-       
-
-
+        public string? Email { get; set; }
 
         public void AdicionarAgendamento(Agendamento agendamento)
         {
