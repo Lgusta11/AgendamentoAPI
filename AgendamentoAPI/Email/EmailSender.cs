@@ -28,10 +28,20 @@ namespace AgendamentoAPI.Email
             await SendEmailAsync(user, subject, htmlMessage);
         }
 
+
+
+        //Enviar Email
+        private readonly IConfiguration _configuration;
+
+        public DummyEmailSender(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
         private async Task SendEmailAsync(PessoaComAcesso user, string subject, string htmlMessage)
         {
             var email = new MimeMessage();
-            email.From.Add(new MailboxAddress("Agendamento AFS", "ecogreencosmetico@gmail.com"));
+            email.From.Add(new MailboxAddress("Agendamento AFS", _configuration["EmailSender"]));
             email.To.Add(new MailboxAddress(user.UserName, user.Email));
             email.Subject = subject;
             email.Body = new TextPart("html") { Text = htmlMessage };
@@ -39,12 +49,14 @@ namespace AgendamentoAPI.Email
             using (var client = new SmtpClient())
             {
                 await client.ConnectAsync("smtp.gmail.com", 465, MailKit.Security.SecureSocketOptions.SslOnConnect);
-                await client.AuthenticateAsync("ecogreencosmetico@gmail.com", "jnla qeey bbyg hhgr");
+                await client.AuthenticateAsync(_configuration["EmailSender"], _configuration["EmailSenderSenha"]);
                 await client.SendAsync(email);
                 await client.DisconnectAsync(true);
             }
         }
 
-
     }
 }
+
+
+

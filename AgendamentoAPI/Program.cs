@@ -1,25 +1,57 @@
 using AgendamentoAPI.Email;
+using AgendamentoAPI.EndPoints;
 using AgendamentoAPI.EndPoints.AdminCrud;
 using Agendamentos.EndPoints;
 using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Dados.Modelos;
 using Agendamentos.Shared.Modelos.Modelos;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Text.Json.Serialization;
-
-
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AgendamentosContext>();
+
 builder.Services.AddScoped<PessoaComAcesso>();
+
 builder.Services.AddIdentity<PessoaComAcesso, Admin>()
     .AddEntityFrameworkStores<AgendamentosContext>()
     .AddDefaultTokenProviders();
-builder.Services.AddAuthorization();
-builder.Services.AddSingleton<IEmailSender<PessoaComAcesso>, DummyEmailSender>();
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    var issuer = builder.Configuration["Jwt:Issuer"];
+    var key = builder.Configuration["Jwt:Key"];
+
+    if (issuer == null || key == null)
+    {
+        throw new Exception("Jwt:Issuer and Jwt:Key must be defined in the configuration.");
+    }
+
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = issuer,
+        ValidAudience = issuer,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+    };
+});
+
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddSingleton<IEmailSender<PessoaComAcesso>, DummyEmailSender>();
 
 builder.Services.AddScoped<DAL<Professores>>();
 builder.Services.AddScoped<DAL<Equipamentos>>();
@@ -43,11 +75,10 @@ builder.Services.AddCors(
 
 var app = builder.Build();
 
-
-
 app.UseCors("wasm");
 
 app.UseStaticFiles();
+app.UseAuthentication(); 
 app.UseAuthorization();
 
 app.AddEndPointsProfessores();
@@ -55,7 +86,8 @@ app.AddEndPointsAulas();
 app.AddEndPointsEquipamentos();
 app.AddEndPointsAgendamentos();
 app.AddEndPointsAdmin();
-
+app.AddEndPointsCadastro();
+app.AddEndPoinsLogin();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -68,9 +100,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-
-app.MapGroup("/auth").MapIdentityApi<PessoaComAcesso>()
-    .WithTags("Autenticação");
 
 app.MapPost("auth/logout", async ([FromServices] SignInManager<PessoaComAcesso> signInManager) =>
 {

@@ -17,7 +17,6 @@ namespace Agendamentos.EndPoints
         {
 
             var groupBuilder = app.MapGroup("professores")
-            .RequireAuthorization()
             .WithTags("Professores");
 
             #region Endpoint Professores
@@ -41,45 +40,6 @@ namespace Agendamentos.EndPoints
                 }
                 return Results.Ok(EntityToResponse(professores));
 
-            });
-
-            app.MapPost("CadastroDeProfessor", async ([FromServices] IHostEnvironment env, [FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] DummyEmailSender emailSender, [FromServices] IUrlHelper urlHelper, [FromBody] ProfessoresRequest professoresRequest) =>
-            {
-                if (professoresRequest.senha != professoresRequest.confirmacaoSenha)
-                {
-                    return Results.BadRequest("A senha e a confirmação de senha não correspondem.");
-                }
-
-                var user = new PessoaComAcesso { UserName = professoresRequest.email, Email = professoresRequest.email };
-                var result = await userManager.CreateAsync(user, professoresRequest.senha);
-
-                if (!result.Succeeded)
-                {
-                    return Results.BadRequest(result.Errors.Select(x => x.Description));
-                }
-
-                var nome = professoresRequest.nome.Trim();
-                var imagemProfessor = DateTime.Now.ToString("ddMMyyyyhhss") + "." + nome + ".jpg";
-
-                var path = Path.Combine(env.ContentRootPath,
-                    "wwwroot", "FotosPerfil", imagemProfessor);
-
-                using MemoryStream ms = new MemoryStream(Convert.FromBase64String(professoresRequest.fotoPerfil!));
-                using FileStream fs = new(path, FileMode.Create);
-                await ms.CopyToAsync(fs);
-
-                var Professores = new Professores(professoresRequest.nome) { FotoPerfil = $"/FotosPerfil/{imagemProfessor}" };
-
-                dal.Adicionar(Professores);
-
-               
-                var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-                var confirmationLink = urlHelper.Action("ConfirmEmail", "Account", new { userId = user.Id, token = token }, urlHelper.ActionContext.HttpContext.Request.Scheme);
-
-                
-                await emailSender.SendConfirmationLinkAsync(user, user.Email, confirmationLink!);
-
-                return Results.Ok();
             });
 
 

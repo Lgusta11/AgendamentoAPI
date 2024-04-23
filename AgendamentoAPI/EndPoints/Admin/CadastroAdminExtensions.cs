@@ -35,23 +35,7 @@ namespace AgendamentoAPI.EndPoints.AdminCrud
                     return Results.Ok(admin);
                 }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
-            groupBuilder.MapPost("", async ([FromServices] DAL<Admin> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromBody] AdminRequest adminRequest) =>
-            {
-                var user = new PessoaComAcesso { UserName = adminRequest.Email, Email = adminRequest.Email };
-                var result = await userManager.CreateAsync(user, adminRequest.Senha);
-
-                if (!result.Succeeded)
-                {
-                    return Results.BadRequest(result.Errors.Select(x => x.Description));
-                }
-
-                await userManager.AddToRoleAsync(user, "Admin");
-
-                var admin = new Admin { Nome = adminRequest.Nome, Email = adminRequest.Email }; // Salve o email aqui
-                dal.Adicionar(admin);
-
-                return Results.Ok();
-            }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
+           
 
             groupBuilder.MapPut("{id}", async ([FromServices] DAL<Admin> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromBody] AdminRequestEdit adminRequestEdit, int id) =>
                 {

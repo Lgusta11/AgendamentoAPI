@@ -13,7 +13,6 @@ namespace Agendamentos.EndPoints
             public static void AddEndPointsEquipamentos(this WebApplication app)
             {
                 var groupBuilder = app.MapGroup("equipamentos")
-                .RequireAuthorization()
                 .WithTags("Equipamentos");
 
                 groupBuilder.MapGet("", ([FromServices] DAL<Equipamentos> dal) =>
