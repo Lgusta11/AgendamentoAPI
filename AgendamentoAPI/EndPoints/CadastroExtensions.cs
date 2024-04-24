@@ -1,4 +1,4 @@
-﻿using AgendamentoAPI.Requests;
+using AgendamentoAPI.Requests;
 using Agendamentos.Requests;
 using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Dados.Modelos;
@@ -23,14 +23,12 @@ namespace AgendamentoAPI.EndPoints
                 .WithTags("Autenticação");
 
             //ADMIN
-            groupBuilder.MapPost("Cadastro/Admin", async ([FromServices] DAL<Admin> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] AdminRequest adminRequest) =>
+  app.MapPost("auth/cadastro/admin", async ([FromServices] DAL<Admin> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<IdentityRole<int>> roleManager, [FromBody] AdminRequest adminRequest) =>
             {
-               
-
                 // Verifique se o papel de administrador existe, se não, crie um
                 if (!await roleManager.RoleExistsAsync("Admin"))
                 {
-                    var adminRole = new Admin { Name = "Admin", Nome = "Admin", Email = "admin@example.com", Senha = "AdminAFS24_" };
+                    var adminRole = new IdentityRole<int> { Name = "Admin" };
                     await roleManager.CreateAsync(adminRole);
                 }
 
@@ -39,7 +37,7 @@ namespace AgendamentoAPI.EndPoints
                     return Results.BadRequest("A senha e a confirmação de senha não correspondem.");
                 }
 
-                var user = new PessoaComAcesso { UserName = adminRequest.Nome, Email = adminRequest.Email };
+                var user = new PessoaComAcesso { UserName = adminRequest.Email, Email = adminRequest.Email };
                 var result = await userManager.CreateAsync(user, adminRequest.Senha);
 
                 if (!result.Succeeded)
@@ -49,10 +47,11 @@ namespace AgendamentoAPI.EndPoints
 
                 await userManager.AddToRoleAsync(user, "Admin");
 
-                var admin = new Admin { Nome = adminRequest.Nome, Email = adminRequest.Email, Senha = adminRequest.Senha };
+                // Crie uma instância de Admin sem a propriedade Senha
+                var admin = new Admin { Nome = adminRequest.Nome, Email = adminRequest.Email };
                 dal.Adicionar(admin);
 
-                return Results.Ok();
+                return Results.Ok("Administrador registrado com sucesso.");
             });
 
 
