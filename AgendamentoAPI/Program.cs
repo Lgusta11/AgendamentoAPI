@@ -22,6 +22,35 @@ builder.Services.AddIdentity<PessoaComAcesso, Admin>()
     .AddEntityFrameworkStores<AgendamentosContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddSingleton<IEmailSender<PessoaComAcesso>, DummyEmailSender>();
+
+builder.Services.AddScoped<DAL<Professores>>();
+builder.Services.AddScoped<DAL<Equipamentos>>();
+builder.Services.AddScoped<DAL<Aulas>>();
+builder.Services.AddScoped<DAL<Agendamento>>();
+builder.Services.AddScoped<DAL<Admin>>();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options => options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+
+builder.Services.AddCors(
+    options => options.AddPolicy(
+        "wasm",
+        policy => policy.WithOrigins([builder.Configuration["BackendUrl"] ?? "https://localhost:7054"])
+            .AllowAnyMethod()
+            .SetIsOriginAllowed(pol => true)
+            .AllowAnyHeader()
+            .AllowCredentials()));
+
+var app = builder.Build();
+
+app.UseCors("wasm");
+
+app.UseStaticFiles();
+
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -51,33 +80,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddSingleton<IEmailSender<PessoaComAcesso>, DummyEmailSender>();
 
-builder.Services.AddScoped<DAL<Professores>>();
-builder.Services.AddScoped<DAL<Equipamentos>>();
-builder.Services.AddScoped<DAL<Aulas>>();
-builder.Services.AddScoped<DAL<Agendamento>>();
-builder.Services.AddScoped<DAL<Admin>>();
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options => options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
-
-builder.Services.AddCors(
-    options => options.AddPolicy(
-        "wasm",
-        policy => policy.WithOrigins([builder.Configuration["BackendUrl"] ?? "https://localhost:7054"])
-            .AllowAnyMethod()
-            .SetIsOriginAllowed(pol => true)
-            .AllowAnyHeader()
-            .AllowCredentials()));
-
-var app = builder.Build();
-
-app.UseCors("wasm");
-
-app.UseStaticFiles();
 app.UseAuthentication(); 
 app.UseAuthorization();
 
