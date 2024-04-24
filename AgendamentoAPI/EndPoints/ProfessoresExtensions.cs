@@ -17,6 +17,7 @@ namespace Agendamentos.EndPoints
         {
 
             var groupBuilder = app.MapGroup("professores")
+            .RequireAuthorization()
             .WithTags("Professores");
 
             #region Endpoint Professores
@@ -96,7 +97,7 @@ namespace Agendamentos.EndPoints
 
         private static ProfessoresResponse EntityToResponse(Professores Professores)
         {
-            return new ProfessoresResponse(Professores.Id, Professores.Nome, Professores.FotoPerfil);
+            return new ProfessoresResponse(Professores.Id, Professores.Nome);
         }
     }
 }

@@ -28,7 +28,7 @@ namespace AgendamentoAPI.EndPoints
                 var result = await userManager.CheckPasswordAsync(user, loginRequest.Password);
                 if (!result)
                 {
-                    return Results.Redirect("/Home");
+                    return Results.Redirect("/home");
                 }
 
                 // Geração do Token JWT
@@ -58,4 +58,3 @@ namespace AgendamentoAPI.EndPoints
         }
     }
 }
-

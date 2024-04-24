@@ -16,13 +16,12 @@ namespace Agendamentos.Shared.Modelos.Modelos
         public Professores(string nome)
         {
             Nome = nome;
-            FotoPerfil = "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png";
+            
 
         }
 
         public string Nome { get; set; }
         public int Id { get; set; }
-        public string FotoPerfil { get; set; }
         public string? Email { get; set; }
 
         public void AdicionarAgendamento(Agendamento agendamento)
@@ -39,8 +38,9 @@ namespace Agendamentos.Shared.Modelos.Modelos
         public override string ToString()
         {
             return $@"Id: {Id}
-            Nome: {Nome}
-            Foto de Perfil: {FotoPerfil}";
+            Nome: {Nome}";
+            
+
 
 
         }

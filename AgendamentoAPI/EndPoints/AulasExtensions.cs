@@ -12,6 +12,7 @@ namespace Agendamentos.EndPoints
         public static void AddEndPointsAulas(this WebApplication app)
         {
             var groupBuilder = app.MapGroup("aulas")
+            .RequireAuthorization()
             .WithTags("Aulas");
 
             #region Endpoint Aulas

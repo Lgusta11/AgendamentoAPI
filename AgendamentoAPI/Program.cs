@@ -89,17 +89,6 @@ app.AddEndPointsAdmin();
 app.AddEndPointsCadastro();
 app.AddEndPoinsLogin();
 
-using (var scope = app.Services.CreateScope())
-{
-    var serviceProvider = scope.ServiceProvider;
-    var roleManager = serviceProvider.GetRequiredService<RoleManager<Admin>>();
-    if (!await roleManager.RoleExistsAsync("Admin"))
-    {
-        var admin = new Admin { Name = "Admin", Nome = "Admin", Email = "admin@example.com" };
-        await roleManager.CreateAsync(admin);
-    }
-}
-
 
 app.MapPost("auth/logout", async ([FromServices] SignInManager<PessoaComAcesso> signInManager) =>
 {
