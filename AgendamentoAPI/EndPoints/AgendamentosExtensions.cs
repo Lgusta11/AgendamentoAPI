@@ -14,7 +14,6 @@ namespace Agendamentos.EndPoints
         {
             {
                 var groupBuilder = app.MapGroup("agendamentos")
-                .RequireAuthorization()
                 .WithTags("Agendamentos");
 
 

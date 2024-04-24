@@ -16,8 +16,7 @@ namespace AgendamentoAPI.EndPoints
             var groupBuilder = app.MapGroup("auth")
                 .WithTags("Autenticação");
 
-            // LOGIN
-            groupBuilder.MapPost("Login", async ([FromServices] UserManager<PessoaComAcesso> userManager, [FromBody] LoginRequest loginRequest, IConfiguration _config) =>
+            groupBuilder.MapPost("Login", async ([FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] LoginRequest loginRequest, IConfiguration _config) =>
             {
                 var user = await userManager.FindByEmailAsync(loginRequest.Email);
                 if (user == null)
@@ -31,12 +30,23 @@ namespace AgendamentoAPI.EndPoints
                     return Results.Redirect("/home");
                 }
 
+                // Verifique a função do usuário
+                var roles = await userManager.GetRolesAsync(user);
+                if (roles.Contains("Admin"))
+                {
+                    return Results.Redirect("/Admin/Home");  // Alterado para "/Admin/Home"
+                }
+                else if (roles.Contains("Professor"))
+                {
+                    return Results.Redirect("/Home");  // Alterado para "/Home"
+                }
+
                 // Geração do Token JWT
                 var claims = new[]
                 {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Email!),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            };
+                 new Claim(JwtRegisteredClaimNames.Sub, user.Email!),
+                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                 };
 
                 var jwtKey = _config["Jwt:Key"];
                 if (jwtKey == null)
@@ -55,6 +65,8 @@ namespace AgendamentoAPI.EndPoints
 
                 return Results.Ok(new { Token = new JwtSecurityTokenHandler().WriteToken(token) });
             });
+
+
         }
     }
 }

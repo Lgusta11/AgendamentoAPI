@@ -12,7 +12,6 @@ namespace AgendamentoAPI.EndPoints.AdminCrud
         public static void AddEndPointsAdmin(this WebApplication app)
         {
             var groupBuilder = app.MapGroup("Admin")
-               .RequireAuthorization()
                .WithTags("Admin");
 
                 groupBuilder.MapGet("", ([FromServices] DAL<Admin> dal) =>

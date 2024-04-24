@@ -17,7 +17,6 @@ namespace Agendamentos.EndPoints
         {
 
             var groupBuilder = app.MapGroup("professores")
-            .RequireAuthorization()
             .WithTags("Professores");
 
             #region Endpoint Professores
