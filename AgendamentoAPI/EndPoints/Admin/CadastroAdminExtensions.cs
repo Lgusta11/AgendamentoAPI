@@ -9,6 +9,8 @@ namespace AgendamentoAPI.EndPoints.AdminCrud
 {
     public static class CadastroAdminExtensions
     {
+
+       
         public static void AddEndPointsAdmin(this WebApplication app)
         {
             var groupBuilder = app.MapGroup("Admin")

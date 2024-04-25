@@ -1,40 +1,38 @@
-using AgendamentoAPI.Requests;
-using Agendamentos.Requests;
-using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Dados.Modelos;
-using Agendamentos.Shared.Modelos.Modelos;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using Microsoft.Extensions.Hosting;
+using System;
+using System.Linq;
+using Microsoft.Extensions.Logging;
+using Agendamentos.Shared.Modelos.Modelos;
+using Agendamentos.Shared.Dados.Database;
+using Agendamentos.Requests;
+using AgendamentoAPI.Requests;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AgendamentoAPI.EndPoints
 {
     public static class CadastroExtensions
     {
-
-
         public static void AddEndPointsCadastro(this WebApplication app)
         {
             var groupBuilder = app.MapGroup("auth")
                 .WithTags("Autenticação");
 
             //ADMIN
-  app.MapPost("auth/cadastro/admin", async ([FromServices] DAL<Admin> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<IdentityRole<int>> roleManager, [FromBody] AdminRequest adminRequest) =>
+            groupBuilder.MapPost("Cadastro/admin", async ([FromServices] DAL<Admin> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] AdminRequest adminRequest) =>
             {
                 // Verifique se o papel de administrador existe, se não, crie um
                 if (!await roleManager.RoleExistsAsync("Admin"))
                 {
                     var adminRole = new IdentityRole<int> { Name = "Admin" };
-                    await roleManager.CreateAsync(adminRole);
+                    await roleManager.CreateAsync((Admin)adminRole);
                 }
 
                 if (adminRequest.Senha != adminRequest.ConfirmacaoSenha)
                 {
-                    return Results.BadRequest("A senha e a confirmação de senha não correspondem.");
+                    return Results.BadRequest(new { message = "A senha e a confirmação de senha não correspondem." });
                 }
 
                 var user = new PessoaComAcesso { UserName = adminRequest.Email, Email = adminRequest.Email };
@@ -54,15 +52,12 @@ namespace AgendamentoAPI.EndPoints
                 return Results.Ok("Administrador registrado com sucesso.");
             });
 
-
-
-
             //PROFESSOR
             groupBuilder.MapPost("Cadastro/Professor", async ([FromServices] IHostEnvironment env, [FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<IdentityRole> roleManager, [FromBody] ProfessoresRequest professoresRequest) =>
             {
                 if (professoresRequest.senha != professoresRequest.confirmacaoSenha)
                 {
-                    return Results.BadRequest("A senha e a confirmação de senha não correspondem.");
+                    return Results.BadRequest(new { message = "A senha e a confirmação de senha não correspondem." });
                 }
 
                 var user = new PessoaComAcesso { UserName = professoresRequest.nome, Email = professoresRequest.email };
@@ -84,10 +79,9 @@ namespace AgendamentoAPI.EndPoints
 
                 var Professores = new Professores(professoresRequest.nome);
                 dal.Adicionar(Professores);
-                return Results.Ok();
+
+                return Results.Ok("Professor registrado com sucesso.");
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
-
-
         }
     }
 }

@@ -1,4 +1,3 @@
-using AgendamentoAPI.Email;
 using AgendamentoAPI.EndPoints;
 using AgendamentoAPI.EndPoints.AdminCrud;
 using Agendamentos.EndPoints;
@@ -19,7 +18,38 @@ builder.Services.AddDbContext<AgendamentosContext>();
 builder.Services.AddScoped<PessoaComAcesso>();
 builder.Services.AddIdentity<PessoaComAcesso, Admin>()
     .AddEntityFrameworkStores<AgendamentosContext>()
+    .AddRoleManager<RoleManager<Admin>>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddLogging();
+builder.Services.AddScoped<DAL<Aulas>>();
+builder.Services.AddScoped<DAL<Equipamentos>>();
+builder.Services.AddScoped<DAL<Professores>>();
+builder.Services.AddScoped<DAL<Agendamento>>();
+builder.Services.AddScoped<DAL<Admin>>();
+
+// Configuração do JWT Authentication
+var issuer = builder.Configuration["Jwt:Issuer"];
+var key = builder.Configuration["Jwt:Key"];
+if (issuer == null || key == null)
+{
+    throw new Exception("Jwt:Issuer and Jwt:Key must be defined in the configuration.");
+}
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = issuer,
+            ValidAudience = issuer,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+        };
+    });
 
 // Configuração do CORS
 builder.Services.AddCors(options => options.AddPolicy("wasm", policy => policy
@@ -37,42 +67,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(
     options => options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
-
-// Middleware para servir arquivos estáticos
-app.UseStaticFiles();
-
-// Configuração do JWT Authentication
-var issuer = builder.Configuration["Jwt:Issuer"];
-var key = builder.Configuration["Jwt:Key"];
-if (issuer == null || key == null)
-{
-    throw new Exception("Jwt:Issuer and Jwt:Key must be defined in the configuration.");
-}
-
-app.UseAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = issuer,
-        ValidAudience = issuer,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
-    };
-});
-
-// Configuração do CORS
-app.UseCors("wasm");
-
-// Middleware de Autorização
-app.UseAuthorization();
 
 // Adição dos Endpoints
 app.AddEndPointsProfessores();
@@ -82,6 +79,7 @@ app.AddEndPointsAgendamentos();
 app.AddEndPointsAdmin();
 app.AddEndPointsCadastro();
 app.AddEndPoinsLogin();
+
 
 // Endpoint de Logout
 app.MapPost("auth/logout", async ([FromServices] SignInManager<PessoaComAcesso> signInManager) =>
