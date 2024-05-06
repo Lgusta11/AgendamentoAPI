@@ -1,0 +1,90 @@
+﻿@page "/admin/equipamentos/cadastrar"
+@using AgendamentosWEB.Requests
+@using System.ComponentModel.DataAnnotations
+@inject EquipamentosAPI equipamentosAPI
+@inject NavigationManager NavManager
+@inject IJSRuntime JS
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<AuthorizeView>
+    <Authorized Context="authContext">
+        <h3>Cadastrar Equipamento</h3>
+
+        <EditForm Model="@model" OnValidSubmit="HandleFormSubmit" Context="formContext">
+            <DataAnnotationsValidator />
+            <MudGrid>
+                <MudItem xs="12" sm="7">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudTextField Label="Nome" Required="true" @bind-Value="model.Nome" For="@(() => model.Nome)" />
+                            <MudNumericField Label="Quantidade" Required="true" @bind-Value="model.Quantidade" For="@(() => model.Quantidade)" />
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton ButtonType="ButtonType.Submit" Style="background-color: #008000; color:white" Variant="Variant.Filled" Class="ml-auto">Cadastrar</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" sm="5">
+                    <MudPaper Class="pa-4 mud-height-full">
+                        <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                        @if (!string.IsNullOrEmpty(apiError))
+                        {
+                            <MudText Color="Color.Error">@apiError</MudText>
+                        }
+                        else if (success)
+                        {
+                            <MudText Color="Color.Success">Success</MudText>
+                        }
+                        else
+                        {
+                            <MudText Color="@Color.Error">
+                                <ValidationSummary />
+                            </MudText>
+                        }
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </Authorized>
+    <NotAuthorized>
+        @{
+            NavManager.NavigateTo("/auth/login");
+        }
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    EquipamentoFormModel model = new EquipamentoFormModel();
+    bool success;
+    string? apiError;
+
+    public class EquipamentoFormModel
+    {
+        [Required(ErrorMessage = "O nome é obrigatório.")]
+        public string? Nome { get; set; }
+
+        [Required(ErrorMessage = "A quantidade é obrigatória.")]
+        public int Quantidade { get; set; }
+    }
+
+    private async Task HandleFormSubmit()
+    {
+        if (success)
+        {
+            EquipamentoRequest equipamento = new EquipamentoRequest(model.Nome!, model.Quantidade);
+            try
+            {
+                await equipamentosAPI.AddEquipamentoAsync(equipamento);
+                await JS.InvokeVoidAsync("alert", "Equipamento cadastrado com sucesso!");
+                model = new EquipamentoFormModel(); // Reset the form
+                success = true;
+                apiError = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                apiError = "Erro ao cadastrar equipamento: " + ex.Message;
+                success = false;
+            }
+        }
+    }
+}

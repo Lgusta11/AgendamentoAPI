@@ -1,0 +1,52 @@
+﻿@page "/admin/equipamentos"
+@inject EquipamentosAPI equipamentosAPI
+@inject NavigationManager NavManager
+@inject IJSRuntime JS
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<AuthorizeView>
+    <Authorized Context="authContext">
+        <MudButton Color="Color.Success" OnClick="@(() => NavManager.NavigateTo("/admin/equipamentos/cadastrar"))">Adicionar Equipamento</MudButton>
+        <MudTable Items="@equipamentos" Hover="true" Breakpoint="Breakpoint.Sm">
+            <HeaderContent>
+                <MudTh>Id</MudTh>
+                <MudTh>Nome</MudTh>
+                <MudTh>Quantidade</MudTh>
+                <MudTh>Ações</MudTh>
+            </HeaderContent>
+            <RowTemplate Context="equipamento">
+                <MudTd DataLabel="Id">@equipamento.Id</MudTd>
+                <MudTd DataLabel="Nome">@equipamento.Nome</MudTd>
+                <MudTd DataLabel="Quantidade">@equipamento.Quantidade</MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" OnClick="@(() => NavManager.NavigateTo($"/admin/equipamentos/editar/{equipamento.Id}"))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteEquipamento(equipamento.Id))" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </Authorized>
+    <NotAuthorized>
+        @{
+            NavManager.NavigateTo("/auth/login");
+        }
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private ICollection<EquipamentoResponse>? equipamentos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        equipamentos = await equipamentosAPI.GetEquipamentosAsync();
+    }
+
+    private async Task DeleteEquipamento(int id)
+    {
+        bool confirm = await JS.InvokeAsync<bool>("confirm", "Você realmente quer excluir este equipamento?");
+        if (confirm)
+        {
+            await equipamentosAPI.DeleteEquipamentoAsync(id);
+            equipamentos = await equipamentosAPI.GetEquipamentosAsync(); // Atualiza a lista de equipamentos
+        }
+    }
+}

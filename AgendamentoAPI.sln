@@ -9,12 +9,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgendamentoAPI", "Agendamen
 		{C8C1CEF3-7744-4DF5-BA1D-F5BA139A41D0} = {C8C1CEF3-7744-4DF5-BA1D-F5BA139A41D0}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgendamentosAPI.Shared.Dados", "AgendamentosAPI.Shared.Dados\AgendamentosAPI.Shared.Dados.csproj", "{1ADCBBC4-13B1-4A5E-9839-65D0D65D13CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgendamentosAPI.Shared.Dados", "AgendamentosAPI.Shared.Dados\AgendamentosAPI.Shared.Dados.csproj", "{1ADCBBC4-13B1-4A5E-9839-65D0D65D13CD}"
 	ProjectSection(ProjectDependencies) = postProject
 		{C8C1CEF3-7744-4DF5-BA1D-F5BA139A41D0} = {C8C1CEF3-7744-4DF5-BA1D-F5BA139A41D0}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgendamentosAPI.Shared.Models", "AgendamentosAPI.Shared.Models\AgendamentosAPI.Shared.Models.csproj", "{C8C1CEF3-7744-4DF5-BA1D-F5BA139A41D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgendamentosAPI.Shared.Models", "AgendamentosAPI.Shared.Models\AgendamentosAPI.Shared.Models.csproj", "{C8C1CEF3-7744-4DF5-BA1D-F5BA139A41D0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgendamentosWEB", "AgendamentosWEB\AgendamentosWEB.csproj", "{1DCAE0DB-3371-4CCA-8802-0B5CD587B026}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +36,10 @@ Global
 		{C8C1CEF3-7744-4DF5-BA1D-F5BA139A41D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C8C1CEF3-7744-4DF5-BA1D-F5BA139A41D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C8C1CEF3-7744-4DF5-BA1D-F5BA139A41D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DCAE0DB-3371-4CCA-8802-0B5CD587B026}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DCAE0DB-3371-4CCA-8802-0B5CD587B026}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DCAE0DB-3371-4CCA-8802-0B5CD587B026}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DCAE0DB-3371-4CCA-8802-0B5CD587B026}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

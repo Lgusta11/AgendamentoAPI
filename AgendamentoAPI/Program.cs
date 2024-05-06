@@ -51,13 +51,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Configuração do CORS
-builder.Services.AddCors(options => options.AddPolicy("wasm", policy => policy
-    .WithOrigins(builder.Configuration["BackendUrl"] ?? "https://localhost:7054")
-    .AllowAnyMethod()
-    .SetIsOriginAllowed(_ => true)
-    .AllowAnyHeader()
-    .AllowCredentials()));
 
 // Configuração do Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -69,7 +62,22 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(
 
 builder.Services.AddAuthorization();
 
+// Configuração do CORS
+builder.Services.AddCors(
+    options => options.AddPolicy(
+        "wasm",
+        policy => policy.WithOrigins([builder.Configuration["BackendUrl"] ?? "https://localhost:7054",
+            builder.Configuration["FrontendUrl"] ?? "https://localhost:7056"])
+            .AllowAnyMethod()
+            .SetIsOriginAllowed(pol => true)
+            .AllowAnyHeader()
+            .AllowCredentials()));
+
+
 var app = builder.Build();
+
+app.UseCors("wasm");
+
 
 // Adição dos Endpoints
 app.AddEndPointsProfessores();

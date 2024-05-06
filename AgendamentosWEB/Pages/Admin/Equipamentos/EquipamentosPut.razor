@@ -1,0 +1,95 @@
+﻿@page "/admin/equipamentos/editar/{Id}"
+@using System.ComponentModel.DataAnnotations
+@using AgendamentosWEB.Requests
+@using AgendamentosWEB.Services
+@inject EquipamentosAPI equipamentosAPI
+@inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<AuthorizeView>
+    <Authorized Context="authContext">
+        <EditForm Model="@model" OnValidSubmit="HandleFormSubmit" Context="formContext">
+            <DataAnnotationsValidator />
+            <MudGrid>
+                <MudItem xs="12" sm="7">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudTextField Label="Nome do Equipamento" HelperText="Max. 30 characters"
+                                          @bind-Value="model.Nome" For="@(() => model.Nome)" />
+                            <MudTextField Label="Quantidade" Class="mt-3"
+                                          @bind-Value="model.Quantidade" For="@(() => model.Quantidade)" />
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton ButtonType="ButtonType.Submit" Style="background-color: #008000; color:white" Variant="Variant.Filled" Class="ml-auto">Atualizar</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" sm="5">
+                    <MudPaper Class="pa-4 mud-height-full">
+                        <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                        @if (!string.IsNullOrEmpty(apiError))
+                        {
+                            <MudText Color="Color.Error">@apiError</MudText>
+                        }
+                        else if (success)
+                        {
+                            <MudText Color="Color.Success">Success</MudText>
+                        }
+                        else
+                        {
+                            <MudText Color="@Color.Error">
+                                <ValidationSummary />
+                            </MudText>
+                        }
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </Authorized>
+    <NotAuthorized>
+        @{
+            NavManager.NavigateTo("/auth/login");
+        }
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    AgendamentosWEB.Requests.EquipamentosRequestEdit model = new AgendamentosWEB.Requests.EquipamentosRequestEdit();
+
+    bool success;
+    string? apiError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var id = int.Parse(Id!);
+        var equipamento = await equipamentosAPI.GetEquipamentoPorIdAsync(id);
+        if (equipamento != null)
+        {
+            model = new AgendamentosWEB.Requests.EquipamentosRequestEdit
+                {
+                    Id = equipamento.Id,
+                    Nome = equipamento.Nome,
+                    Quantidade = equipamento.Quantidade
+                };
+        }
+    }
+
+    private async void HandleFormSubmit()
+    {
+        try
+        {
+            await equipamentosAPI.UpdateEquipamentoAsync(model);
+            success = true;
+            apiError = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            apiError = "Erro ao atualizar equipamento: " + ex.Message;
+            success = false;
+        }
+        StateHasChanged();
+    }
+}
