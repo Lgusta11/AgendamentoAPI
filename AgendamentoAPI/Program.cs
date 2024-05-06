@@ -28,6 +28,7 @@ builder.Services.AddScoped<DAL<Professores>>();
 builder.Services.AddScoped<DAL<Agendamento>>();
 builder.Services.AddScoped<DAL<Admin>>();
 
+
 // Configuração do JWT Authentication
 var issuer = builder.Configuration["Jwt:Issuer"];
 var key = builder.Configuration["Jwt:Key"];
@@ -87,6 +88,8 @@ app.AddEndPointsAgendamentos();
 app.AddEndPointsAdmin();
 app.AddEndPointsCadastro();
 app.AddEndPoinsLogin();
+
+
 
 
 // Endpoint de Logout

@@ -18,9 +18,16 @@ namespace AgendamentoAPI.EndPoints
             var groupBuilder = app.MapGroup("auth")
                 .WithTags("Autenticação");
 
-            groupBuilder.MapPost("Login", async ([FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] SignInManager<PessoaComAcesso> signInManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] LoginRequest loginRequest, IConfiguration _config) =>
+            groupBuilder.MapPost("Login", async (HttpContext context) =>
             {
-                var user = await userManager.FindByEmailAsync(loginRequest.Email);
+
+                var loginRequest = await context.Request.ReadFromJsonAsync<LoginRequest>();
+                var userManager = context.RequestServices.GetRequiredService<UserManager<PessoaComAcesso>>();
+                var signInManager = context.RequestServices.GetRequiredService<SignInManager<PessoaComAcesso>>();
+                var roleManager = context.RequestServices.GetRequiredService<RoleManager<Admin>>();
+                var _config = context.RequestServices.GetRequiredService<IConfiguration>();
+
+                var user = await userManager.FindByEmailAsync(loginRequest!.Email);
                 if (user == null)
                 {
                     return Results.BadRequest(new { message = "Usuário não encontrado." });
@@ -51,15 +58,14 @@ namespace AgendamentoAPI.EndPoints
                 // Geração do Token JWT
                 var claims = new[]
                 {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Email!),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        };
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Email!),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                };
 
                 var jwtKey = _config["Jwt:Key"];
                 if (jwtKey == null)
                 {
-                    throw new ArgumentNullException(nameof(jwtKey),
-                                                        "JwtKey cannot be null.");
+                    throw new ArgumentNullException(nameof(jwtKey), "JwtKey cannot be null.");
                 }
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
@@ -71,8 +77,37 @@ namespace AgendamentoAPI.EndPoints
                     expires: DateTime.Now.AddMinutes(30),
                     signingCredentials: creds);
 
-                return Results.Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token), redirectUrl = redirectUrl });
+                context.Response.Cookies.Append("MeuCookieJWT", new JwtSecurityTokenHandler().WriteToken(token), new CookieOptions
+                {
+                    HttpOnly = true, // Impede que o JavaScript acesse o cookie
+                    Expires = DateTime.Now.AddMinutes(30) // Defina o tempo de expiração do cookie
+                });
+
+                context.Response.Redirect(redirectUrl);
+                return Results.Redirect(redirectUrl);
+
             });
+
+            groupBuilder.MapGet("manage/info", async (HttpContext context) =>
+            {
+                var userManager = context.RequestServices.GetRequiredService<UserManager<PessoaComAcesso>>();
+                var user = await userManager.GetUserAsync(context.User);
+                if (user == null)
+                {
+                    return Results.Unauthorized();
+                }
+
+                var roles = await userManager.GetRolesAsync(user);
+
+                var userInfo = new
+                {
+                    Email = user.Email,
+                    UserName = user.UserName,
+                    Roles = roles
+                };
+
+                return Results.Ok(userInfo);
+            }).RequireAuthorization();
         }
     }
-}
+    }
