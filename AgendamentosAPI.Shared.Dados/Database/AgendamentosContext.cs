@@ -11,7 +11,7 @@ namespace Agendamentos.Shared.Dados.Database
         public DbSet<Professores> Professores { get; set; }
         public DbSet<Equipamentos> Equipamentos { get; set; }
         public DbSet<Agendamento> Agendamentos { get; set; }
-        public DbSet<Aulas> Aulas { get; set; } 
+        public DbSet<Aulas> Aulas { get; set; }
 
         private string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Agendamentos;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
 

@@ -2,6 +2,7 @@
 using AgendamentosWEB.Response;
 using System.Net.Http.Json;
 
+
 namespace AgendamentosWEB.Services;
 public class EquipamentosAPI
     {
@@ -31,7 +32,7 @@ public class EquipamentosAPI
             await _httpClient.DeleteAsync($"equipamentos/{id}");
         }
 
-        public async Task UpdateEquipamentoAsync(EquipamentosRequestEdit equipamento)
+    public async Task UpdateEquipamentoAsync(EquipamentosRequestEdit equipamento)
         {
             await _httpClient.PutAsJsonAsync($"equipamentos/{equipamento.Id}", equipamento);
         }

@@ -1,29 +1,27 @@
-﻿<MudPaper Width="250px" Class="d-inline-flex py-3" Elevation="0" Style="background-color: green;">
-    <MudNavMenu Class="mud-width-full">
-        <MudText Typo="Typo.h6" Class="px-4" Style="color:white;">Olá, Alex!</MudText>
+﻿<MudPaper Width="250px" Elevation="0" Class="py-3" Style="background-color: green;">
+    <MudNavMenu Color="Color.Success">
+        <MudText Typo="Typo.h6" Class="px-4" Style="color:white;">Olá, @authState!!.User.Identity.Name!!</MudText>
         <MudText Typo="Typo.body2" Class="px-4 mud-text-secondary" Style="color:white;">Sistema de Agendamento AFS</MudText>
         <MudDivider Class="my-2" />
-        <MudNavLink Href="/" Underline="Underline.None" Style="color:white;">
-            <MudIcon Icon="@Icons.Material.Filled.Home" Style="color:white;" /> Home
-        </MudNavLink>
-        <MudNavGroup Title="Artistas" Underline="Underline.None" Icon="@Icons.Material.Filled.People" Style="color:white;">
-            <MudNavLink Href="/admin/equipamentos" Underline="Underline.None" Style="color:white;">
-                <MudIcon Icon="@Icons.Material.Filled.People" Style="color:white;" /> Exibir
-            </MudNavLink>
-            <MudNavLink Href="/CadastrarArtista" Underline="Underline.None" Style="color:white;">
-                <MudIcon Icon="@Icons.Material.Filled.People" Style="color:white;" /> Cadastrar
-            </MudNavLink>
-        </MudNavGroup>
-        <MudNavGroup Title="Músicas" Icon="@Icons.Material.Filled.QueueMusic" Underline="Underline.None" Style="color:white;">
-            <MudNavLink Href="/MusicasPorArtista" Underline="Underline.None" Style="color:white;">
-                <MudIcon Icon="@Icons.Material.Filled.QueueMusic" Style="color:white;" /> Músicas por Artista
-            </MudNavLink>
-            <MudNavLink Href="/MusicasPorGenero" Underline="Underline.None" Style="color:white;">
-                <MudIcon Icon="@Icons.Material.Filled.QueueMusic" Style="color:white;" /> Músicas por Gênero
-            </MudNavLink>
-            <MudNavLink Href="/CadastrarMusica" Underline="Underline.None" Style="color:white;">
-                <MudIcon Icon="@Icons.Material.Filled.QueueMusic" Style="color:white;" /> Cadastrar
-            </MudNavLink>
-        </MudNavGroup>
+        @if (authState!.User.IsInRole("Admin"))
+        {
+            <MudNavLink Href="/admin/home" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+            <MudNavGroup Title="Equipamentos" Expanded="true">
+                <MudNavLink Href="/admin/equipamentos">Equipamentos Cadastrados</MudNavLink>
+                <MudNavLink Href="/admin/equipamentos/cadastrar">Cadastrar Equipamentos</MudNavLink>
+            </MudNavGroup>
+        }
+        else if (authState.User.IsInRole("Professores"))
+        {
+            <MudNavLink Href="/admin/home" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+            <MudNavGroup Title="Equipamentos" Expanded="true">
+                <MudNavLink Href="/admin/equipamentos">Equipamentos Cadastrados</MudNavLink>
+                <MudNavLink Href="/admin/equipamentos/cadastrar">Cadastrar Equipamentos</MudNavLink>
+            </MudNavGroup>
+        }
     </MudNavMenu>
 </MudPaper>
+
+@code {
+    private AuthenticationState? authState;
+}

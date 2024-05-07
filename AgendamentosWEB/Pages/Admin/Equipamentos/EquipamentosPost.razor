@@ -20,7 +20,16 @@
                             <MudNumericField Label="Quantidade" Required="true" @bind-Value="model.Quantidade" For="@(() => model.Quantidade)" />
                         </MudCardContent>
                         <MudCardActions>
-                            <MudButton ButtonType="ButtonType.Submit" Style="background-color: #008000; color:white" Variant="Variant.Filled" Class="ml-auto">Cadastrar</MudButton>
+                            <div class="d-flex align-center justify-space-between mt-4">
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Success"
+                                           Disabled="@(!formContext.Validate())"
+                                           Class="ml-auto"
+                                           @onclick="CadastrarEquipamento">
+                                    Cadastrar
+                                </MudButton>
+
+                            </div>
                         </MudCardActions>
                     </MudCard>
                 </MudItem>
@@ -85,6 +94,25 @@
                 apiError = "Erro ao cadastrar equipamento: " + ex.Message;
                 success = false;
             }
+        }
+    }
+
+    private async Task CadastrarEquipamento()
+    {
+        try
+        {
+            var request = new EquipamentoRequest(model.Nome!, model.Quantidade);
+            await equipamentosAPI.AddEquipamentoAsync(request);
+            await JS.InvokeVoidAsync("alert", "Equipamento cadastrado com sucesso!");
+            model = new EquipamentoFormModel(); // Reset the form
+            success = true;
+            apiError = string.Empty;
+            NavManager.NavigateTo("/admin/equipamentos");
+        }
+        catch (Exception ex)
+        {
+            apiError = "Erro ao cadastrar equipamento: " + ex.Message;
+            success = false;
         }
     }
 }

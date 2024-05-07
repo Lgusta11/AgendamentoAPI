@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
 namespace AgendamentosWEB.Requests;
 public class EquipamentosRequestEdit
 {
@@ -21,4 +20,3 @@ public class EquipamentosRequestEdit
         Quantidade = quantidade;
     }
 }
-

@@ -6,10 +6,14 @@
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Color="Color.Surface" Fixed="true" Elevation="2">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="ToggleDrawer" />
-        <MudImage Src="images/afs.png"></MudImage>
-        <MudSpacer />
+    <MudAppBar Style="background-color: #008000;" Fixed="true" Elevation="2">
+        @if (!NavigationManager!.Uri.Contains("/auth/Login"))
+        {
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="ToggleDrawer" Style="color: white;" />
+            <div style="flex-grow: 1;"></div>
+        }
+        <MudImage Class="mud-image" Src="images/afs.png" Style="max-width: 100px; height: auto;"></MudImage>
+        <div style="flex-grow: 1;"></div>
         <AuthorizeView>
             <Authorized>
                 <MudAvatar Color="Color.Default">
@@ -22,10 +26,13 @@
             </NotAuthorized>
         </AuthorizeView>
     </MudAppBar>
-    <MudDrawer Open="@drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
-        <NavMenu></NavMenu>
-    </MudDrawer>
-    <MudMainContent class="main-content pa-10">
+    @if (!NavigationManager!.Uri.Contains("/auth/Login"))
+    {
+        <MudDrawer Open="@drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Style="background-color: #008000;">
+            <NavMenu></NavMenu>
+        </MudDrawer>
+    }
+    <MudMainContent class="main-content pa-10" Style="background-color: #fff;">
         @Body
     </MudMainContent>
 </MudLayout>

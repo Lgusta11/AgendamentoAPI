@@ -18,16 +18,9 @@ namespace AgendamentoAPI.EndPoints
             var groupBuilder = app.MapGroup("auth")
                 .WithTags("Autenticação");
 
-            groupBuilder.MapPost("Login", async (HttpContext context) =>
+            groupBuilder.MapPost("Login", async ([FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] SignInManager<PessoaComAcesso> signInManager, [FromBody] LoginRequest loginRequest, IConfiguration _config, HttpContext context) =>
             {
-
-                var loginRequest = await context.Request.ReadFromJsonAsync<LoginRequest>();
-                var userManager = context.RequestServices.GetRequiredService<UserManager<PessoaComAcesso>>();
-                var signInManager = context.RequestServices.GetRequiredService<SignInManager<PessoaComAcesso>>();
-                var roleManager = context.RequestServices.GetRequiredService<RoleManager<Admin>>();
-                var _config = context.RequestServices.GetRequiredService<IConfiguration>();
-
-                var user = await userManager.FindByEmailAsync(loginRequest!.Email);
+                var user = await userManager.FindByEmailAsync(loginRequest.Email);
                 if (user == null)
                 {
                     return Results.BadRequest(new { message = "Usuário não encontrado." });
@@ -58,8 +51,8 @@ namespace AgendamentoAPI.EndPoints
                 // Geração do Token JWT
                 var claims = new[]
                 {
-                    new Claim(JwtRegisteredClaimNames.Sub, user.Email!),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Email!),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 };
 
                 var jwtKey = _config["Jwt:Key"];
@@ -85,8 +78,9 @@ namespace AgendamentoAPI.EndPoints
 
                 context.Response.Redirect(redirectUrl);
                 return Results.Redirect(redirectUrl);
-
             });
+
+
 
             groupBuilder.MapGet("manage/info", async (HttpContext context) =>
             {
@@ -101,8 +95,8 @@ namespace AgendamentoAPI.EndPoints
 
                 var userInfo = new
                 {
-                    Email = user.Email,
-                    UserName = user.UserName,
+                    user.Email,
+                    user.UserName,
                     Roles = roles
                 };
 
