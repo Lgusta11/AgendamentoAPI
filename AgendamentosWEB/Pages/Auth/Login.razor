@@ -3,60 +3,58 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 @attribute [AllowAnonymous]
+@inject LoginAPI loginAPI
 
-<AuthorizeView>
-    <Authorized>
-        <p>Você está conectado como @authState!!.User.Identity.Name </p>
-    </Authorized>
-    <NotAuthorized>
-        <EditForm Model="@loginFormModel" OnValidSubmit="LoginAsync">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-            <MudGrid>
-                <MudItem xs="12" sm="7">
-                    <MudCard>
-                        <MudCardContent>
-                            <MudTextField Label="Email" Class="mt-3"
-                                          @bind-Value="loginFormModel.Email" For="@(() => loginFormModel.Email)" />
-                            <MudTextField Label="Senha" HelperText="Escolha uma senha forte" Class="mt-3"
-                                          @bind-Value="loginFormModel.Password" For="@(() => loginFormModel.Password)" InputType="InputType.Password" />
-                        </MudCardContent>
-                        <MudCardActions>
-                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" @onclick="LoginAsync" Class="ml-auto">Login</MudButton>
-                        </MudCardActions>
-                    </MudCard>
-                </MudItem>
-                <MudItem xs="12" sm="5">
-                    <MudPaper Class="pa-4 mud-height-full">
-                        <MudText Typo="Typo.subtitle2">Resumo da validação</MudText>
-                        @if (success)
-                        {
-                            <MudText Color="Color.Success">Sucesso</MudText>
-                        }
-                        else
-                        {
-                            <MudText Color="@Color.Error">
-                                <ValidationSummary Context="validationContext" />
-                            </MudText>
-                        }
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudText Typo="Typo.body2" Align="Align.Center">
-                        Preencha o formulário corretamente para ver a mensagem de sucesso.
-                    </MudText>
-                </MudItem>
-            </MudGrid>
-        </EditForm>
+<MudPaper Class="px-8 pt-2 pb-4 mx-16 my-8" Justify="Justify.Center">
 
-    </NotAuthorized>
-</AuthorizeView>
+    <AuthorizeView>
+        <Authorized>
+            @if (roles.Contains("Admin"))
+            {
+                NavigationManager.NavigateTo("/Admin/Home");
+            }
+            else if (roles.Contains("Professor"))
+            {
+                NavigationManager.NavigateTo("/Home");
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/");
+            }
+        </Authorized>
+        <NotAuthorized>
+            <MudForm>
+
+                <MudTextField T="string" Label="Email" @bind-Value="email"
+                              Variant="Variant.Outlined" Class="my-4"
+                              Required="true" RequiredError="Email obrigatório!"
+                              OnlyValidateIfDirty="true" />
+
+                <MudTextField T="string" Label="Senha" @bind-Value="senha"
+                              InputType="InputType.Password"
+                              Variant="Variant.Outlined" Class="my-4"
+                              Required="true" RequiredError="Senha obrigatória!"
+                              OnlyValidateIfDirty="true" />
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           Class="my-6" @onclick="LoginAsync">
+                    Login
+                </MudButton>
+
+            </MudForm>
+        </NotAuthorized>
+    </AuthorizeView>
 
 
-@code {
-    private AuthenticationState? authState;
+</MudPaper>
+
+
+    @code {
     private LoginFormModel loginFormModel = new LoginFormModel();
     bool success;
+    List<string> roles = new List<string>();
+    private string? email;
+    private string? senha;
 
     public class LoginFormModel
     {
@@ -72,17 +70,27 @@
     private async Task LoginAsync()
     {
         var loginRequest = new LoginRequest { Email = loginFormModel.Email, Password = loginFormModel.Password };
-        var response = await Http.PostAsJsonAsync("auth/Login", loginRequest);
-        if (response.IsSuccessStatusCode)
+        var response = await loginAPI.LoginAsync(loginRequest);
+        if (response.Sucesso)
         {
-            var content = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-            if (content != null && content.ContainsKey("token"))
-            {
-                var token = content["token"];
-                // Aqui você pode armazenar o token em algum lugar para uso posterior
+            // Aqui você pode armazenar o token em algum lugar para uso posterior
 
+            // Verifique a função do usuário
+            var user = await loginAPI.GetAuthenticationStateAsync();
+            roles = new List<string>(user.User.Claims.Select(c => c.Value));
+            if (roles.Contains("Admin"))
+            {
+                NavigationManager.NavigateTo("/Admin/Home");
+            }
+            else if (roles.Contains("Professor"))
+            {
+                NavigationManager.NavigateTo("/Home");
+            }
+            else
+            {
                 NavigationManager.NavigateTo("/");
             }
         }
     }
-}
+    }
+    
