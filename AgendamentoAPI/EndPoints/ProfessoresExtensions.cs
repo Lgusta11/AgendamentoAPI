@@ -73,7 +73,7 @@ namespace Agendamentos.EndPoints
 
                 // Atualiza o email e a senha do usuário
                 user.Email = professoresRequestEdit.email;
-                user.UserName = professoresRequestEdit.email;
+                user.UserName = professoresRequestEdit.nome;
                 var passwordResetToken = await userManager.GeneratePasswordResetTokenAsync(user);
                 var passwordChangeResult = await userManager.ResetPasswordAsync(user, passwordResetToken, professoresRequestEdit.senha);
 
