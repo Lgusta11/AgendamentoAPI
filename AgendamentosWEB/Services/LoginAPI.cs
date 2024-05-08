@@ -58,6 +58,18 @@ namespace AgendamentosWEB.Services
             return new LoginResponse { Sucesso = false, Erros = ["Login/senha inválidos"] };
         }
 
+        public async Task<List<string>> GetUserRolesAsync(string email)
+        {
+            var response = await _httpClient.GetAsync($"auth/GetRoles/{email}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var roles = await response.Content.ReadFromJsonAsync<List<string>>();
+                return roles!;
+            }
+
+            return new List<string>();
+        }
         public async Task LogoutAsync()
         {
             await _httpClient.PostAsync("auth/logout", null);

@@ -18,7 +18,7 @@ namespace AgendamentoAPI.EndPoints
             var groupBuilder = app.MapGroup("auth")
                 .WithTags("Autenticação");
 
-            groupBuilder.MapPost("Login", async ([FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] SignInManager<PessoaComAcesso> signInManager, [FromBody] LoginRequest loginRequest, IConfiguration _config, HttpContext context) =>
+            groupBuilder.MapPost("Login", async ([FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] SignInManager<PessoaComAcesso> signInManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] LoginRequest loginRequest, IConfiguration _config) =>
             {
                 var user = await userManager.FindByEmailAsync(loginRequest.Email);
                 if (user == null)
@@ -58,7 +58,8 @@ namespace AgendamentoAPI.EndPoints
                 var jwtKey = _config["Jwt:Key"];
                 if (jwtKey == null)
                 {
-                    throw new ArgumentNullException(nameof(jwtKey), "JwtKey cannot be null.");
+                    throw new ArgumentNullException(nameof(jwtKey),
+                                                        "JwtKey cannot be null.");
                 }
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
@@ -70,17 +71,21 @@ namespace AgendamentoAPI.EndPoints
                     expires: DateTime.Now.AddMinutes(30),
                     signingCredentials: creds);
 
-                context.Response.Cookies.Append("MeuCookieJWT", new JwtSecurityTokenHandler().WriteToken(token), new CookieOptions
-                {
-                    HttpOnly = true, // Impede que o JavaScript acesse o cookie
-                    Expires = DateTime.Now.AddMinutes(30) // Defina o tempo de expiração do cookie
-                });
-
-                context.Response.Redirect(redirectUrl);
-                return Results.Redirect(redirectUrl);
+                return Results.Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token), redirectUrl });
             });
 
 
+            groupBuilder.MapGet("GetRoles/{email}", async ([FromServices] UserManager<PessoaComAcesso> userManager, string email) =>
+            {
+                var user = await userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    return Results.NotFound(new { message = "Usuário não encontrado." });
+                }
+
+                var roles = await userManager.GetRolesAsync(user);
+                return Results.Ok(new { roles });
+            });
 
             groupBuilder.MapGet("manage/info", async (HttpContext context) =>
             {
@@ -101,7 +106,7 @@ namespace AgendamentoAPI.EndPoints
                 };
 
                 return Results.Ok(userInfo);
-            }).RequireAuthorization();
+            });
         }
     }
     }

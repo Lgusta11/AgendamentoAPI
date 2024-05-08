@@ -4,6 +4,9 @@
 @inject NavigationManager NavigationManager
 @attribute [AllowAnonymous]
 @inject LoginAPI loginAPI
+@using System.Text.RegularExpressions
+@using System.Security.Claims
+@inject IJSRuntime JSRuntime
 
 <MudPaper Class="px-8 pt-2 pb-4 mx-16 my-8" Justify="Justify.Center">
 
@@ -11,50 +14,55 @@
         <Authorized>
             @if (roles.Contains("Admin"))
             {
-                NavigationManager.NavigateTo("/Admin/Home");
+            NavigationManager.NavigateTo("/Admin/Home");
             }
-            else if (roles.Contains("Professor"))
+            else if (roles.Contains("Professores"))
             {
-                NavigationManager.NavigateTo("/Home");
-            }
-            else
-            {
-                NavigationManager.NavigateTo("/");
+            NavigationManager.NavigateTo("/Home");
             }
         </Authorized>
         <NotAuthorized>
-            <MudForm>
-
-                <MudTextField T="string" Label="Email" @bind-Value="email"
-                              Variant="Variant.Outlined" Class="my-4"
-                              Required="true" RequiredError="Email obrigatório!"
-                              OnlyValidateIfDirty="true" />
-
-                <MudTextField T="string" Label="Senha" @bind-Value="senha"
-                              InputType="InputType.Password"
-                              Variant="Variant.Outlined" Class="my-4"
-                              Required="true" RequiredError="Senha obrigatória!"
-                              OnlyValidateIfDirty="true" />
-
-                <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                           Class="my-6" @onclick="LoginAsync">
-                    Login
-                </MudButton>
-
-            </MudForm>
+            <MudGrid>
+                <MudItem xs="12" sm="7">
+                    <MudPaper Class="pa-4">
+                        <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors" OnValidSubmit="HandleFormSubmit">
+                            <MudTextField T="string" Label="Email" @bind-Value="email" Required="true" RequiredError="Email obrigatório!"
+                                          Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" />
+                            <MudTextField T="string" Label="Senha" @bind-Value="senha" InputType="InputType.Password"
+                                          Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))" Required="true"
+                                          RequiredError="Senha obrigatória!" />
+                            <div class="d-flex align-center justify-space-between">
+                                <MudButton Variant="Variant.Filled" Color="Color.Success" Disabled="@(!success)" Class="ml-auto" @onclick="LoginAsync">Login</MudButton>
+                            </div>
+                        </MudForm>
+                    </MudPaper>
+                    <MudPaper Class="pa-4 mt-4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" DisableElevation="true" OnClick="@(()=>form!.Validate())">Validate</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" DisableElevation="true" OnClick="@(()=>form!.ResetAsync())" Class="mx-2">Reset</MudButton>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="5">
+                    <MudPaper Class="pa-4 mud-height-full">
+                        <MudText Typo="Typo.subtitle2">@($"Errors ({errors.Length})")</MudText>
+                        @foreach (var error in errors)
+                        {
+                            <MudText Color="@Color.Error">@error</MudText>
+                        }
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
         </NotAuthorized>
     </AuthorizeView>
-
-
 </MudPaper>
 
-
-    @code {
+@code {
+    MudForm? form;
     private LoginFormModel loginFormModel = new LoginFormModel();
     bool success;
-    List<string> roles = new List<string>();
+    string[] errors = { };
     private string? email;
     private string? senha;
+    List<string> roles = new List<string>();
 
     public class LoginFormModel
     {
@@ -67,6 +75,23 @@
         public string? Password { get; set; }
     }
 
+    private IEnumerable<string> PasswordStrength(string pw)
+    {
+        if (string.IsNullOrWhiteSpace(pw))
+        {
+            yield return "Password is required!";
+            yield break;
+        }
+        if (pw.Length < 8)
+            yield return "Password must be at least of length 8";
+        if (!Regex.IsMatch(pw, @"[A-Z]"))
+            yield return "Password must contain at least one capital letter";
+        if (!Regex.IsMatch(pw, @"[a-z]"))
+            yield return "Password must contain at least one lowercase letter";
+        if (!Regex.IsMatch(pw, @"[0-9]"))
+            yield return "Password must contain at least one digit";
+    }
+
     private async Task LoginAsync()
     {
         var loginRequest = new LoginRequest { Email = loginFormModel.Email, Password = loginFormModel.Password };
@@ -74,23 +99,22 @@
         if (response.Sucesso)
         {
             // Aqui você pode armazenar o token em algum lugar para uso posterior
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "MeuCookieJWT", response.Token);
 
-            // Verifique a função do usuário
-            var user = await loginAPI.GetAuthenticationStateAsync();
-            roles = new List<string>(user.User.Claims.Select(c => c.Value));
+            // Recupere as funções do usuário
+            roles = await loginAPI.GetUserRolesAsync(loginRequest.Email!);
+
             if (roles.Contains("Admin"))
             {
-                NavigationManager.NavigateTo("/Admin/Home");
+                NavigationManager.NavigateTo("/Admin/Home/Admin/Home");
             }
-            else if (roles.Contains("Professor"))
+            else if (roles.Contains("Professores"))
             {
                 NavigationManager.NavigateTo("/Home");
             }
-            else
-            {
-                NavigationManager.NavigateTo("/");
-            }
         }
     }
-    }
-    
+}
+
+   
+}

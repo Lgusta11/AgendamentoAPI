@@ -1,13 +1,16 @@
 ﻿@page "/Logout"
 @inject LoginAPI LoginAPI
+@inject NavigationManager NavigationManager
 @attribute [AllowAnonymous]
 
 @code {
     protected override async Task OnInitializedAsync()
     {
         if (await LoginAPI.VerificaAutenticado())
+        {
             await LoginAPI.LogoutAsync();
+            NavigationManager.NavigateTo("/auth/login");
+        }
         await base.OnInitializedAsync();
     }
-
 }

@@ -1,9 +1,10 @@
-﻿<MudPaper Width="250px" Elevation="0" Class="py-3" Style="background-color: green;">
-    <MudNavMenu Color="Color.Success">
-        <MudText Typo="Typo.h6" Class="px-4" Style="color:white;">Olá, @authState!!.User.Identity.Name!!</MudText>
-        <MudText Typo="Typo.body2" Class="px-4 mud-text-secondary" Style="color:white;">Sistema de Agendamento AFS</MudText>
-        <MudDivider Class="my-2" />
-        @if (authState!.User.IsInRole("Admin"))
+﻿@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject LoginAPI loginAPI
+
+<AuthorizeView>
+    <Authorized>
+        @if (roles.Contains("Admin"))
         {
             <MudNavLink Href="/admin/home" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
             <MudNavGroup Title="Equipamentos" Expanded="true">
@@ -11,7 +12,7 @@
                 <MudNavLink Href="/admin/equipamentos/cadastrar">Cadastrar Equipamentos</MudNavLink>
             </MudNavGroup>
         }
-        else if (authState.User.IsInRole("Professores"))
+        else if (roles.Contains("Professor"))
         {
             <MudNavLink Href="/admin/home" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
             <MudNavGroup Title="Equipamentos" Expanded="true">
@@ -19,9 +20,26 @@
                 <MudNavLink Href="/admin/equipamentos/cadastrar">Cadastrar Equipamentos</MudNavLink>
             </MudNavGroup>
         }
-    </MudNavMenu>
-</MudPaper>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private AuthenticationState? authState;
+    private List<string> roles = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            roles = await loginAPI.GetUserRolesAsync(user.Identity.Name);
+        }
+    }
 }
+
+
