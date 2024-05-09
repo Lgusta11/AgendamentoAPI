@@ -16,8 +16,6 @@ builder.Services.AddScoped(sp => (LoginAPI)sp.GetRequiredService<AuthenticationS
 
 builder.Services.AddMudServices();
 
-
-
 // Adicione os serviços necessários
 builder.Services.AddScoped<CookieHandler>();
 builder.Services.AddScoped<AdminAPI>();

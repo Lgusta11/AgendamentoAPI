@@ -5,7 +5,7 @@
 @attribute [AllowAnonymous]
 @inject IJSRuntime JS
 
-<MudPaper Class="px-8 pt-2 pb-4 mx-16 my-8" Justify="Justify.Center">
+
 
     <AuthorizeView>
         <Authorized>      
@@ -21,29 +21,33 @@
             }
         </Authorized>
         <NotAuthorized>
-            <MudForm>
+         <MudForm>
+    <MudContainer Style="max-width: 500px; margin: auto;">
+        <MudPaper Elevation="1" Square="false" Class="pa-6">
+            <MudTitle Typo="Typo.h4">Login</MudTitle>
+            <MudText Typo="Typo.body1">Por favor, insira suas credenciais para entrar.</MudText>
+            <MudTextField T="string" Label="Email" @bind-Value="email"
+                          Variant="Variant.Filled" Class="mt-5"
+                          Required="true" RequiredError="Email obrigatório!"
+                          OnlyValidateIfDirty="true" FullWidth="true" />
 
-                <MudTextField T="string" Label="Email" @bind-Value="email"
-                              Variant="Variant.Outlined" Class="my-4"
-                              Required="true" RequiredError="Email obrigatório!"
-                              OnlyValidateIfDirty="true" />
+            <MudTextField T="string" Label="Senha" @bind-Value="senha"
+                          InputType="InputType.Password"
+                          Variant="Variant.Filled" Class="mt-5"
+                          Required="true" RequiredError="Senha obrigatória!"
+                          OnlyValidateIfDirty="true" FullWidth="true" />
 
-                <MudTextField T="string" Label="Senha" @bind-Value="senha"
-                              InputType="InputType.Password"
-                              Variant="Variant.Outlined" Class="my-4"
-                              Required="true" RequiredError="Senha obrigatória!"
-                              OnlyValidateIfDirty="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       Class="mt-5" FullWidth="true" @onclick="FazerLogin">
+                Login
+            </MudButton>
+        </MudPaper>
+    </MudContainer>
+</MudForm>
 
-                <MudButton Variant="Variant.Filled" Color="Color.Secondary"
-                           Class="my-6" @onclick="FazerLogin">
-                    Login
-                </MudButton>
-
-            </MudForm>
         </NotAuthorized>
     </AuthorizeView>
 
-</MudPaper>
 
 @code {
     private string? email;
@@ -86,4 +90,3 @@
 
 }
 
-}
