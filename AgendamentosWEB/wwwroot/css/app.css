@@ -11,13 +11,14 @@ a, .btn-link {
 }
 
 .btn-primary {
-    color: #fff;
+    color: #1b6ec2;
     background-color: #1b6ec2;
     border-color: #1861ac;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    color: #1b6ec2;
 }
 
 .content {
@@ -112,3 +113,13 @@ header.mud-appbar.mud-appbar-fixed-top.mud-elevation-2.mud-theme-surface {
     background-color: lightyellow; /* Laranja */
 }
 
+input[type=text] {
+    border: none; /* Remove as bordas padrão */
+    padding: 4px 8px;
+    border-radius: 12px; /* Infelizmente, a propriedade 'outline' não é arredondada! */
+}
+
+    input[type=text]:focus {
+        outline: none; /* Remove a borda padrão e use 'box-shadow' ou 'border' */
+        box-shadow: 0 0 0 2px orange; /* Liberdade total (funciona também com 'border-radius') */
+    }
