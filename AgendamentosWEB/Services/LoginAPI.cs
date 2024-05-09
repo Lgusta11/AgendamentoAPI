@@ -40,9 +40,13 @@ namespace AgendamentosWEB.Services
             return new AuthenticationState(pessoa);
         }
 
-        public async Task<LoginResponse> LoginAsync(LoginRequest loginRequest)
+        public async Task<LoginResponse> LoginAsync(string email, string senha)
         {
-            var response = await _httpClient.PostAsJsonAsync("auth/Login", loginRequest);
+            var response = await _httpClient.PostAsJsonAsync("auth/Login", new
+            {
+                email,
+                password = senha
+            });
 
             if (response.IsSuccessStatusCode)
             {
@@ -64,12 +68,14 @@ namespace AgendamentosWEB.Services
 
             if (response.IsSuccessStatusCode)
             {
-                var roles = await response.Content.ReadFromJsonAsync<List<string>>();
+                var responseObject = await response.Content.ReadFromJsonAsync<Dictionary<string, List<string>>>();
+                var roles = responseObject["roles"];
                 return roles!;
             }
 
             return new List<string>();
         }
+
         public async Task LogoutAsync()
         {
             await _httpClient.PostAsync("auth/logout", null);
