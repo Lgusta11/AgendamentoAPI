@@ -27,20 +27,20 @@ namespace Agendamentos.EndPoints
                 {
                     return Results.NotFound();
                 }
-                var listaDeProfessoresResponse = EntityListToResponseList(listaDeProfessores);
+                var listaDeProfessoresResponse = listaDeProfessores.Select(a => new ProfessoresResponse(a.Id, a.Nome, a.Email)).ToList();
                 return Results.Ok(listaDeProfessoresResponse);
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
-            groupBuilder.MapGet("{nome}", ([FromServices] DAL<Professores> dal, string nome) =>
+            groupBuilder.MapGet("{id}", ([FromServices] DAL<Professores> dal, int id) =>
             {
-                var professores = dal.RecuperarPor(a => a.Nome.ToUpper().Equals(nome.ToUpper()));
-                if (professores is null)
+                var professor = dal.RecuperarPor(a => a.Id == id);
+                if (professor is null)
                 {
                     return Results.NotFound();
                 }
-                return Results.Ok(EntityToResponse(professores));
-
-            });
+                var professorResponse = new ProfessoresResponse(professor.Id, professor.Nome, professor.Email);
+                return Results.Ok(professorResponse);
+            }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
 
             groupBuilder.MapDelete("{id}", ([FromServices] DAL<Professores> dal, int id) => {
@@ -54,7 +54,7 @@ namespace Agendamentos.EndPoints
 
             });
 
-            groupBuilder.MapPut("", async ([FromServices] DAL<Professores> dal, [FromServices] UserManager<IdentityUser> userManager, [FromBody] ProfessoresRequestEdit professoresRequestEdit) =>
+            groupBuilder.MapPut("{id}", async ([FromServices] IHostEnvironment env, [FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] ProfessoresRequestEdit professoresRequestEdit) =>
             {
                 var professoresAAtualizar = dal.RecuperarPor(a => a.Id == professoresRequestEdit.Id);
                 if (professoresAAtualizar is null)
@@ -66,6 +66,12 @@ namespace Agendamentos.EndPoints
                 if (user == null)
                 {
                     return Results.NotFound("Usuário não encontrado.");
+                }
+
+                // Verifica se a senha e a confirmação de senha correspondem
+                if (professoresRequestEdit.senha != professoresRequestEdit.confirmacaoSenha)
+                {
+                    return Results.BadRequest(new { message = "A senha e a confirmação de senha não correspondem." });
                 }
 
                 // Atualiza o nome do professor
@@ -83,8 +89,8 @@ namespace Agendamentos.EndPoints
                 }
 
                 dal.Atualizar(professoresAAtualizar);
-                return Results.Ok();
-            });
+                return Results.Ok("Professor atualizado com sucesso.");
+            }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
             #endregion
         }
@@ -96,7 +102,7 @@ namespace Agendamentos.EndPoints
 
         private static ProfessoresResponse EntityToResponse(Professores Professores)
         {
-            return new ProfessoresResponse(Professores.Id, Professores.Nome);
+            return new ProfessoresResponse(Professores.Id, Professores.Nome, Professores.Email);
         }
     }
 }

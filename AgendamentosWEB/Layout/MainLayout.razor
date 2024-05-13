@@ -7,7 +7,7 @@
 
 <MudLayout>
     <MudAppBar Style="background-color: #008000;" Fixed="true" Elevation="2">
-        @if (!NavigationManager!.Uri.Contains("/auth/Login"))
+        @if (!NavigationManager!.Uri.Contains("/auth/login"))
         {
             <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="ToggleDrawer" Style="color: white;" />
             <div style="flex-grow: 1;"></div>
@@ -16,9 +16,7 @@
         <div style="flex-grow: 1;"></div>
         <AuthorizeView>
             <Authorized>
-                <MudAvatar Color="Color.Default">
-                    <MudIcon Icon="@Icons.Material.Filled.Person"></MudIcon>
-                </MudAvatar>
+             
                 <MudButton Class="ml-4" OnClick="Logout" Variant="Variant.Outlined" Color="Color.Default">Logout</MudButton>
             </Authorized>
             <NotAuthorized>
@@ -28,7 +26,7 @@
     </MudAppBar>
     @if (!NavigationManager!.Uri.Contains("/auth/Login"))
     {
-        <MudDrawer Open="@drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Color="Color.Secondary">
+        <MudDrawer Open="@drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Color="Color.Primary">
             <NavMenu></NavMenu>
         </MudDrawer>
     }

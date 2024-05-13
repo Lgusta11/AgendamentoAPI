@@ -4,6 +4,7 @@ using System.Security.Claims;
 using AgendamentosWEB.Requests;
 using System.Net.Http.Headers;
 using AgendamentosWEB.Response;
+using Microsoft.Extensions.Logging;
 
 namespace AgendamentosWEB.Services
 {
@@ -11,10 +12,12 @@ namespace AgendamentosWEB.Services
     {
         private bool autenticado = false;
         private readonly HttpClient _httpClient;
+        private readonly ILogger<LoginAPI> _logger;
 
-        public LoginAPI(IHttpClientFactory factory)
+        public LoginAPI(IHttpClientFactory factory, ILogger<LoginAPI> logger)
         {
             _httpClient = factory.CreateClient("API");
+            _logger = logger;
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -42,44 +45,74 @@ namespace AgendamentosWEB.Services
 
         public async Task<LoginResponse> LoginAsync(string email, string senha)
         {
-            var response = await _httpClient.PostAsJsonAsync("auth/Login", new
+            try
             {
-                email,
-                password = senha
-            });
-
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-                if (content != null && content.ContainsKey("token"))
+                var response = await _httpClient.PostAsJsonAsync("auth/Login", new
                 {
-                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", content["token"]);
-                    NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
-                    return new LoginResponse { Sucesso = true };
-                }
-            }
+                    email,
+                    password = senha
+                });
 
-            return new LoginResponse { Sucesso = false, Erros = ["Login/senha inválidos"] };
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Falha no login para o usuário {Email}", email);
+                    return new LoginResponse { Sucesso = false, Erros = ["Login/senha inválidos"] };
+                }
+
+                var content = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+                if (content == null || !content.ContainsKey("token"))
+                {
+                    _logger.LogError("Token não encontrado na resposta para o usuário {Email}", email);
+                    return new LoginResponse { Sucesso = false, Erros = ["Token não encontrado na resposta"] };
+                }
+
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", content["token"]);
+                NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+                _logger.LogInformation("Login bem sucedido para o usuário {Email}", email);
+                return new LoginResponse { Sucesso = true };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro durante o login para o usuário {Email}", email);
+                return new LoginResponse { Sucesso = false, Erros = [ex.Message] };
+            }
         }
 
         public async Task<List<string>> GetUserRolesAsync(string email)
         {
-            var response = await _httpClient.GetAsync($"auth/GetRoles/{email}");
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var responseObject = await response.Content.ReadFromJsonAsync<Dictionary<string, List<string>>>();
-                var roles = responseObject["roles"];
-                return roles!;
-            }
+                var response = await _httpClient.GetAsync($"auth/GetRoles/{email}");
 
-            return new List<string>();
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseObject = await response.Content.ReadFromJsonAsync<Dictionary<string, List<string>>>();
+                    var roles = responseObject["roles"];
+                    return roles!;
+                }
+
+                _logger.LogWarning("Não foi possível recuperar as funções para o usuário {Email}", email);
+                return new List<string>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao recuperar as funções para o usuário {Email}", email);
+                return new List<string>();
+            }
         }
 
         public async Task LogoutAsync()
         {
-            await _httpClient.PostAsync("auth/logout", null);
-            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+            try
+            {
+                await _httpClient.PostAsync("auth/logout", null);
+                NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+                _logger.LogInformation("Logout bem sucedido");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro durante o logout");
+            }
         }
 
         public async Task<bool> VerificaAutenticado()

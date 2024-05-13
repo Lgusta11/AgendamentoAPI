@@ -2,9 +2,7 @@
 @using MudBlazor
 @inject HttpClient _httpClient
 @inject IJSRuntime JS
-
-
-
+@inject CadastroAPI professoresAPI
 
 <MudPaper Elevation="2" Class="pa-5">
     <MudForm>
@@ -12,7 +10,7 @@
         <MudTextField @bind-Value="professor.Email" Label="Email" Variant="Variant.Text" FullWidth />
         <MudTextField @bind-Value="professor.Senha" Label="Senha" Variant="Variant.Text" FullWidth InputType="InputType.Password" />
         <MudTextField @bind-Value="professor.ConfirmacaoSenha" Label="Confirmação de Senha" Variant="Variant.Text" FullWidth InputType="InputType.Password" />
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="CadastrarProfessor">Cadastrar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="CadastrarProfessor">Cadastrar</MudButton>
     </MudForm>
 </MudPaper>
 
@@ -20,29 +18,50 @@
     ProfessoresRequest professor = new ProfessoresRequest();
     string apiError = string.Empty;
 
+    [Inject] ISnackbar? Snackbar { get; set; }
+
     private async Task CadastrarProfessor()
     {
-        try
+        // Validações antes de enviar a solicitação
+        if (string.IsNullOrWhiteSpace(professor.Nome))
         {
-            var response = await _httpClient.PostAsJsonAsync("auth/Cadastro/Professor", professor);
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<ProfessoresResponse>();
-                if (result != null)
-                {
-                    await JS.InvokeVoidAsync("alert", "Professor cadastrado com sucesso!");
-                    professor = new ProfessoresRequest(); // Reset the form
-                    apiError = string.Empty;
-                }
-            }
-            else
-            {
-                apiError = "Erro ao cadastrar o professor: " + response.StatusCode;
-            }
+            apiError = "O campo Nome é obrigatório.";
+            return;
         }
-        catch (Exception ex)
+
+        if (string.IsNullOrWhiteSpace(professor.Email) || !professor.Email.Contains("@"))
         {
-            apiError = "Erro ao cadastrar o professor: " + ex.Message;
+            apiError = "Por favor, insira um endereço de e-mail válido.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(professor.Senha) || professor.Senha.Length < 6)
+        {
+            apiError = "A senha deve ter pelo menos 6 caracteres.";
+            return;
+        }
+
+        if (professor.Senha != professor.ConfirmacaoSenha)
+        {
+            apiError = "A senha e a confirmação de senha não correspondem.";
+            return;
+        }
+
+        // Enviar a solicitação para a API
+        var response = await professoresAPI.CadastroProfessorAsync(professor);
+        if (response != null)
+        {
+            // Aqui você pode lidar com a resposta bem-sucedida, por exemplo, mostrar uma mensagem de sucesso
+            Snackbar.Add("Professor cadastrado com sucesso!", Severity.Success);
+        }
+        else
+        {
+            apiError = "Erro ao cadastrar professor.";
+            // Aqui você pode lidar com a resposta de erro, por exemplo, mostrar uma mensagem de erro
+            Snackbar.Add(apiError, Severity.Error);
         }
     }
 }
+
+
+

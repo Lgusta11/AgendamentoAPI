@@ -52,6 +52,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    // Configurações do usuário
+    options.User.AllowedUserNameCharacters =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ ";
+    options.User.RequireUniqueEmail = true;
+
+    // Configurações de senha
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+});
+
 
 // Configuração do Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -78,6 +93,18 @@ builder.Services.AddCors(
 var app = builder.Build();
 
 app.UseCors("wasm");
+
+// Obtenha uma instância do RoleManager
+using var serviceScope = app.Services.CreateScope();
+var serviceProvider = serviceScope.ServiceProvider;
+var roleManager = serviceProvider.GetRequiredService<RoleManager<Admin>>();
+
+// Verifique se a função "Professores" existe, se não, crie-a
+if (!roleManager.RoleExistsAsync("Professores").Result)
+{
+    var roleResult = roleManager.CreateAsync(new Admin { Name = "Professores" }).Result;
+}
+
 
 
 // Adição dos Endpoints

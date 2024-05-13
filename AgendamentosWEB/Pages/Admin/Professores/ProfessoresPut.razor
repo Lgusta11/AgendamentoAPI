@@ -1,0 +1,76 @@
+﻿@page "/admin/professores/editar/{Id}"
+@using MudBlazor
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient _httpClient
+@inject IJSRuntime JS
+@inject ProfessoresAPI professoresAPI
+
+@inject NavigationManager NavManager
+
+<MudPaper Elevation="2" Class="pa-5">
+    <MudForm>
+        <MudTextField @bind-Value="model.Nome" Label="Nome" Variant="Variant.Text" FullWidth />
+        <MudTextField @bind-Value="model.Email" Label="Email" Variant="Variant.Text" FullWidth />
+        <MudTextField @bind-Value="model.Senha" Label="Senha" Variant="Variant.Text" FullWidth InputType="InputType.Password" />
+        <MudTextField @bind-Value="model.ConfirmacaoSenha" Label="Confirmação de Senha" Variant="Variant.Text" FullWidth InputType="InputType.Password" />
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="EditarProfessor">Salvar</MudButton>
+    </MudForm>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    ProfessorFormModel model = new ProfessorFormModel();
+    bool success;
+    string? apiError;
+
+    public class ProfessorFormModel
+    {
+        [Required(ErrorMessage = "O nome é obrigatório.")]
+        public string? Nome { get; set; }
+
+        [Required(ErrorMessage = "A quantidade é obrigatória.")]
+        public string? Email { get; set; }
+
+        [Required(ErrorMessage = "A quantidade é obrigatória.")]
+        public string? Senha { get; set; }
+
+        [Required(ErrorMessage = "A quantidade é obrigatória.")]
+        public string? ConfirmacaoSenha { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var professorData = await professoresAPI.GetProfessorPorIdAsync(int.Parse(Id));
+        if (professorData != null)
+        {
+            model = new ProfessorFormModel
+                {
+                    Nome = professorData.Nome,
+                    Email = professorData.Email,
+                    Senha = professorData.Senha,
+                    ConfirmacaoSenha = professorData.ConfirmacaoSenha
+                };
+        }
+    }
+
+    private async Task EditarProfessor()
+    {
+        try
+        {
+            var request = new ProfessoresRequestEdit(int.Parse(Id), model.Nome!, model.Email!, model.Senha!, model.ConfirmacaoSenha!);
+            await professoresAPI.UpdateProfessorAsync(request);
+            await JS.InvokeVoidAsync("alert", "Professor atualizado com sucesso!");
+            model = new ProfessorFormModel(); // Reset the form
+            success = true;
+            apiError = string.Empty;
+            NavManager.NavigateTo("/admin/professores");
+        }
+        catch (Exception ex)
+        {
+            apiError = "Erro ao atualizar professor: " + ex.Message;
+            success = false;
+        }
+    }
+}

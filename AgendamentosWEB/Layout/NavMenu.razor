@@ -1,26 +1,28 @@
 ﻿@using System.Security.Claims
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject LoginAPI loginAPI
+<link href="https://use.fontawesome.com/releases/v5.14.0/css/all.css" rel="stylesheet">
 
 <AuthorizeView>
     <Authorized>
-        <MudContainer Style="margin-top: 50px;">
+        <MudPaper Width="250px" Class="d-inline-flex py-3" Elevation="0" Style="color:#fff; background-color:#008000">
+        <MudNavMenu Class="mud-width-full" Color="Color.Primary">
             <MudText Typo="Typo.h6" Class="px-4" Style="color:white;">Olá, @authState.User.Identity.Name</MudText>
-            <MudText Typo="Typo.body2" Class="px-4 mud-text-secondary" Style="color:white;">Sistema de Agendamento AFS</MudText>
+            <MudText Typo="Typo.body2" Class="px-4 mud-text-primary" Style="color:white;">Sistema de Agendamento AFS</MudText>
             <MudDivider Class="my-2" />
             @if (roles.Contains("Admin"))
             {
-                <MudNavGroup Title="Admin" Expanded="true">
-                    <MudNavLink Href="/admin/home" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-                    <MudNavGroup Title="Equipamentos" Expanded="true">
-                        <MudNavLink Href="/admin/equipamentos">Equipamentos Cadastrados</MudNavLink>
-                        <MudNavLink Href="/admin/equipamentos/cadastrar">Cadastrar Equipamentos</MudNavLink>
-                    </MudNavGroup>
-                    <MudNavGroup Title="Profesores" Expanded="true">
-                        <MudNavLink Href="/admin/professores">Professores Cadastrados</MudNavLink>
-                        <MudNavLink Href="/admin/professores/cadastrar">Cadastrar Professores</MudNavLink>
-                    </MudNavGroup>
+               
+                <MudNavLink Href="/admin/home" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+                <MudNavGroup Title="Professores" Icon="@Icons.Material.Filled.People" Expanded="true">
+                    <MudNavLink Href="/admin/professores" Icon="@Icons.Material.Filled.People" IconColor="Color.Default">Professores Cadastrados</MudNavLink>
+                    <MudNavLink Href="/admin/professores/cadastrar" Icon="@Icons.Material.Filled.PersonAdd" IconColor="Color.Default">Cadastrar Professores</MudNavLink>
                 </MudNavGroup>
+                <MudNavGroup Title="Equipamentos" Icon="@Icons.Material.Filled.Tv" Expanded="true">
+                    <MudNavLink Href="/admin/equipamentos" Icon="@Icons.Material.Filled.Tv" IconColor="Color.Default">Equipamentos Cadastrados</MudNavLink>
+                    <MudNavLink Href="/admin/equipamentos/cadastrar" Icon="@Icons.Material.Filled.AddBox" IconColor="Color.Default">Cadastrar Professores</MudNavLink>
+                </MudNavGroup>
+
             }
             else if (roles.Contains("Professor"))
             {
@@ -32,7 +34,8 @@
                     </MudNavGroup>
                 </MudNavGroup>
             }
-        </MudContainer>
+            </MudNavMenu>
+        </MudPaper>
     </Authorized>
     <NotAuthorized>
         <RedirectToLogin />

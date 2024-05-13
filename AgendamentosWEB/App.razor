@@ -1,11 +1,13 @@
 ﻿@using AgendamentosWEB.Pages.Auth
-
+@inject NavigationManager Navigation
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
-                    <RedirectToLogin/>
+                    @{
+                    Navigation.NavigateTo("/auth/login");
+                    }
                 </NotAuthorized>
             </AuthorizeRouteView>
             <FocusOnNavigate RouteData="@routeData" Selector="h1" />

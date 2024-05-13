@@ -35,7 +35,7 @@ namespace AgendamentoAPI.EndPoints
                     return Results.BadRequest(new { message = "A senha e a confirmação de senha não correspondem." });
                 }
 
-                var user = new PessoaComAcesso { UserName = adminRequest.Email, Email = adminRequest.Email };
+                var user = new PessoaComAcesso { UserName = adminRequest.Nome, Email = adminRequest.Email };
                 var result = await userManager.CreateAsync(user, adminRequest.Senha);
 
                 if (!result.Succeeded)
@@ -53,7 +53,8 @@ namespace AgendamentoAPI.EndPoints
             });
 
             //PROFESSOR
-            groupBuilder.MapPost("Cadastro/Professor", async ([FromServices] IHostEnvironment env, [FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<IdentityRole> roleManager, [FromBody] ProfessoresRequest professoresRequest) =>
+            groupBuilder.MapPost("Cadastro/Professor", async ([FromServices] IHostEnvironment env, [FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] ProfessoresRequest professoresRequest) =>
+
             {
                 if (professoresRequest.senha != professoresRequest.confirmacaoSenha)
                 {
@@ -68,11 +69,7 @@ namespace AgendamentoAPI.EndPoints
                     return Results.BadRequest(result.Errors.Select(x => x.Description));
                 }
 
-                // Verifique se a função "Professores" existe, se não, crie-a
-                if (!await roleManager.RoleExistsAsync("Professores"))
-                {
-                    await roleManager.CreateAsync(new IdentityRole("Professores"));
-                }
+            
 
                 // Atribua a função "Professores" ao usuário
                 await userManager.AddToRoleAsync(user, "Professores");

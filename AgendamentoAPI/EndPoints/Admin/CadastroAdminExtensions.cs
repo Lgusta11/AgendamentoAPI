@@ -53,7 +53,7 @@ namespace AgendamentoAPI.EndPoints.AdminCrud
                     }
 
                     user.Email = adminRequestEdit.Email;
-                    user.UserName = adminRequestEdit.Email;
+                    user.UserName = adminRequestEdit.Nome;
 
                     var result = await userManager.UpdateAsync(user);
                     if (!result.Succeeded)

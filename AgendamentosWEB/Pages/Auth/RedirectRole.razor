@@ -1,0 +1,37 @@
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject NavigationManager Navigation
+@inject LoginAPI loginAPI
+
+@code {
+    private List<string> roles = new List<string>();
+    private string? email;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtenha o estado de autenticação do usuário
+        var authState = await loginAPI.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            email = user.Identity.Name;
+
+            // Recupere as funções do usuário
+            roles = await loginAPI.GetUserRolesAsync(email);
+
+            if (roles.Contains("Admin"))
+            {
+                Navigation.NavigateTo("/admin/home");
+            }
+            else if (roles.Contains("Professores"))
+            {
+                Navigation.NavigateTo("/home");
+            }
+        }
+        else
+        {
+            // Redireciona para a página de login se o usuário não estiver autenticado
+            Navigation.NavigateTo("/auth/login");
+        }
+    }
+}

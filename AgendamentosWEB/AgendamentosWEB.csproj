@@ -20,10 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\Professores\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\AgendamentosAPI.Shared.Dados\AgendamentosAPI.Shared.Dados.csproj" />
   </ItemGroup>
 

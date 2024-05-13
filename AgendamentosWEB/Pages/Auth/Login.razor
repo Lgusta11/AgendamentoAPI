@@ -1,24 +1,12 @@
-﻿@page "/auth/Login"
+﻿@page "/auth/login"
 @using Microsoft.AspNetCore.Components.Authorization
 @inject LoginAPI loginAPI
 @inject NavigationManager Navigation
 @attribute [AllowAnonymous]
 @inject IJSRuntime JS
-
-
-
     <AuthorizeView>
         <Authorized>      
-            @if (roles.Contains("Admin"))
-            {
-            Navigation.NavigateTo("/Admin/Home");
-                return;
-            }
-            else if (roles.Contains("Professores"))
-            {
-            Navigation.NavigateTo("/Home");
-                return;
-            }
+             <RedirectRole/>
         </Authorized>
         <NotAuthorized>
          <MudForm>
@@ -78,12 +66,7 @@
                 Navigation.NavigateTo("/Home");
                 return;
             }
-            else if (ReturnUrl is not null)
-            {
-                // Se o usuário não tiver uma função específica, use ReturnUrl
-                Navigation.NavigateTo(ReturnUrl);
-                return;
-            }
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
         }
     }
 

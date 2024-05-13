@@ -16,10 +16,11 @@ public class ProfessoresAPI
         return await _httpClient.GetFromJsonAsync<ICollection<ProfessoresResponse>>("professores");
     }
 
-    public async Task<ProfessoresResponse?> GetProfessorPorNomeAsync(string nome)
+    public async Task<ProfessoresResponse?> GetProfessorPorIdAsync(int id)
     {
-        return await _httpClient.GetFromJsonAsync<ProfessoresResponse>($"professores/{nome}");
+        return await _httpClient.GetFromJsonAsync<ProfessoresResponse>($"professores/{id}");
     }
+
 
     public async Task DeleteProfessorAsync(int id)
     {

@@ -109,4 +109,4 @@ namespace AgendamentoAPI.EndPoints
             });
         }
     }
-    }
+}

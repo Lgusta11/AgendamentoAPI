@@ -66,6 +66,7 @@
     EquipamentoFormModel model = new EquipamentoFormModel();
     bool success;
     string? apiError;
+    [Inject] ISnackbar? Snackbar { get; set; }
 
     public class EquipamentoFormModel
     {
@@ -88,11 +89,14 @@
                 model = new EquipamentoFormModel(); // Reset the form
                 success = true;
                 apiError = string.Empty;
+               
             }
             catch (Exception ex)
             {
                 apiError = "Erro ao cadastrar equipamento: " + ex.Message;
                 success = false;
+                // Aqui você pode lidar com a resposta de erro, por exemplo, mostrar uma mensagem de erro
+           
             }
         }
     }
@@ -103,7 +107,7 @@
         {
             var request = new EquipamentoRequest(model.Nome!, model.Quantidade);
             await equipamentosAPI.AddEquipamentoAsync(request);
-            await JS.InvokeVoidAsync("alert", "Equipamento cadastrado com sucesso!");
+            Snackbar.Add("Equipamento cadastrado com sucesso!", Severity.Success);
             model = new EquipamentoFormModel(); // Reset the form
             success = true;
             apiError = string.Empty;
@@ -113,6 +117,7 @@
         {
             apiError = "Erro ao cadastrar equipamento: " + ex.Message;
             success = false;
+            Snackbar!.Add(apiError, Severity.Error);
         }
     }
 }
