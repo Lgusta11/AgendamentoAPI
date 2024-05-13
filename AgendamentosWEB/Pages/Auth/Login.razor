@@ -43,6 +43,9 @@
     private List<string> roles = new List<string>();
     [SupplyParameterFromQuery]
     public string? ReturnUrl { get; set; }
+    string apiError = string.Empty;
+
+    [Inject] ISnackbar? Snackbar { get; set; }
 
     private async Task FazerLogin()
     {
@@ -67,6 +70,12 @@
                 return;
             }
             Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        }
+        else
+        {
+            apiError = "Erro: Email ou Senha incorretos!";
+            // Aqui você pode lidar com a resposta de erro, por exemplo, mostrar uma mensagem de erro
+            Snackbar!.Add(apiError, Severity.Error);
         }
     }
 

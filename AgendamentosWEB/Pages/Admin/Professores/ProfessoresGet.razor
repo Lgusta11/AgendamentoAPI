@@ -22,7 +22,7 @@
             <RowTemplate Context="professor">
                 <MudTd DataLabel="Id">@professor.Id</MudTd>
                 <MudTd DataLabel="Nome">@professor.Nome</MudTd>
-                <MudTd DataLabel="Email">@professor.Email</MudTd>
+                <MudTd DataLabel="Email">@professor.email</MudTd>
                 <MudTd>
                     <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" OnClick="@(() => NavManager.NavigateTo($"/admin/professores/editar/{professor.Id}"))" />
                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteProfessorAsync(professor.Id))" />

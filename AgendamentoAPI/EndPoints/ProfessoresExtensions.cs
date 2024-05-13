@@ -20,14 +20,15 @@ namespace Agendamentos.EndPoints
             .WithTags("Professores");
 
             #region Endpoint Professores
-            groupBuilder.MapGet("", ([FromServices] DAL<Professores> dal) =>
+            groupBuilder.MapGet("", ([FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] ProfessoresRequestEdit professoresRequestEdit) =>
             {
+              
                 var listaDeProfessores = dal.Listar();
                 if (listaDeProfessores is null)
                 {
                     return Results.NotFound();
                 }
-                var listaDeProfessoresResponse = listaDeProfessores.Select(a => new ProfessoresResponse(a.Id, a.Nome, a.Email)).ToList();
+                var listaDeProfessoresResponse = listaDeProfessores.Select(a => new ProfessoresResponse(a.Id, a.Nome, a.email!)).ToList();
                 return Results.Ok(listaDeProfessoresResponse);
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
@@ -38,7 +39,7 @@ namespace Agendamentos.EndPoints
                 {
                     return Results.NotFound();
                 }
-                var professorResponse = new ProfessoresResponse(professor.Id, professor.Nome, professor.Email);
+                var professorResponse = new ProfessoresResponse(professor.Id, professor.Nome, professor.email!);
                 return Results.Ok(professorResponse);
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
@@ -97,12 +98,13 @@ namespace Agendamentos.EndPoints
 
         private static ICollection<ProfessoresResponse> EntityListToResponseList(IEnumerable<Professores> listaDeProfessores)
         {
+
             return listaDeProfessores.Select(a => EntityToResponse(a)).ToList();
         }
 
         private static ProfessoresResponse EntityToResponse(Professores Professores)
         {
-            return new ProfessoresResponse(Professores.Id, Professores.Nome, Professores.Email);
+            return new ProfessoresResponse(Professores.Id, Professores.Nome, Professores.email!);
         }
     }
 }

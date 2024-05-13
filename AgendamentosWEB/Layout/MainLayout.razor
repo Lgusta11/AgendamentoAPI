@@ -24,7 +24,7 @@
             </NotAuthorized>
         </AuthorizeView>
     </MudAppBar>
-    @if (!NavigationManager!.Uri.Contains("/auth/Login"))
+    @if (!NavigationManager!.Uri.Contains("/auth/login"))
     {
         <MudDrawer Open="@drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Color="Color.Primary">
             <NavMenu></NavMenu>
@@ -58,7 +58,7 @@
         if (AuthenticationStateProvider is LoginAPI authAPI)
         {
             await authAPI.LogoutAsync();
-            NavigationManager!.NavigateTo("login");
+            NavigationManager!.NavigateTo("/auth/login");
         }
     }
 }
