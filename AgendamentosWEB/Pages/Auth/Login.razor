@@ -61,15 +61,17 @@
 
             if (roles.Contains("Admin"))
             {
-                Navigation.NavigateTo("/Admin/Home");
+                Navigation.NavigateTo("/admin/home");
                 return;
+              
             }
             else if (roles.Contains("Professores"))
             {
-                Navigation.NavigateTo("/Home");
+                Navigation.NavigateTo("/home");
                 return;
+               
             }
-            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+            
         }
         else
         {

@@ -123,3 +123,21 @@ input[type=text] {
         outline: none; /* Remove a borda padrão e use 'box-shadow' ou 'border' */
         box-shadow: 0 0 0 2px orange; /* Liberdade total (funciona também com 'border-radius') */
     }
+
+.mud-navmenu.mud-navmenu-default .mud-nav-link.active:not(.mud-nav-link-disabled) {
+    color: #ffffff;
+    background-color: var(--mud-palette-action-default-hover);
+}
+
+.mud-navmenu.mud-navmenu-default .mud-nav-link i {
+    color: #ffffff;
+}
+
+.mud-navmenu.mud-navmenu-default .mud-nav-link.active:not(.mud-nav-link-disabled),
+.mud-navmenu.mud-navmenu-default .mud-nav-link i,
+.mud-navmenu.mud-navmenu-primary .mud-nav-link.active:not(.mud-nav-link-disabled) .mud-nav-link-icon,
+.mud-nav-link:not(.mud-nav-link-disabled) .mud-nav-link-icon.mud-nav-link-icon-default {
+    color: #ffffff;
+    background-color: var(--mud-palette-action-default-hover);
+}
+

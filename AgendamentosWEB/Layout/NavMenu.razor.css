@@ -70,6 +70,13 @@
             color: #FFFFFF; /* Branco */
         }
 
+.mud-navmenu.mud-navmenu-default .mud-nav-link.active:not(.mud-nav-link-disabled),
+.mud-navmenu.mud-navmenu-default .mud-nav-link i,
+.mud-nav-link:not(.mud-nav-link-disabled) .mud-nav-link-icon.mud-nav-link-icon-default {
+    color: #ffffff;
+}
+
+
 @media (min-width: 641px) {
     .navbar-toggler {
         display: none;
@@ -87,3 +94,5 @@
         overflow-y: auto;
     }
 }
+
+

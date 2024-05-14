@@ -10,6 +10,7 @@ using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Requests;
 using AgendamentoAPI.Requests;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace AgendamentoAPI.EndPoints
 {
@@ -54,30 +55,30 @@ namespace AgendamentoAPI.EndPoints
 
             //PROFESSOR
             groupBuilder.MapPost("Cadastro/Professor", async ([FromServices] IHostEnvironment env, [FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] ProfessoresRequest professoresRequest) =>
-
             {
                 if (professoresRequest.senha != professoresRequest.confirmacaoSenha)
                 {
                     return Results.BadRequest(new { message = "A senha e a confirmação de senha não correspondem." });
                 }
 
-                var user = new PessoaComAcesso { UserName = professoresRequest.nome, Email = professoresRequest.email };
+                var user = new PessoaComAcesso { UserName = professoresRequest.email, Email = professoresRequest.email };
                 var result = await userManager.CreateAsync(user, professoresRequest.senha);
 
-                if (!result.Succeeded)
+                if (result.Succeeded)
+                {
+                    // Crie um novo professor e defina o UserId para o Id do usuário do Identity
+                    var professor = new Professores(professoresRequest.nome) { UserId = user.Id.ToString() };
+                    dal.Adicionar(professor);
+
+                    // Atribua a função "Professores" ao usuário
+                    await userManager.AddToRoleAsync(user, "Professores");
+
+                    return Results.Ok("Professor registrado com sucesso.");
+                }
+                else
                 {
                     return Results.BadRequest(result.Errors.Select(x => x.Description));
                 }
-
-            
-
-                // Atribua a função "Professores" ao usuário
-                await userManager.AddToRoleAsync(user, "Professores");
-
-                var Professores = new Professores(professoresRequest.nome);
-                dal.Adicionar(Professores);
-
-                return Results.Ok("Professor registrado com sucesso.");
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
         }
     }

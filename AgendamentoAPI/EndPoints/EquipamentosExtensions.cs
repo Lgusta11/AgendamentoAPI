@@ -53,19 +53,21 @@ namespace Agendamentos.EndPoints
                     return Results.NoContent();
                 }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
-                groupBuilder.MapPut("", ([FromServices] DAL<Equipamentos> dal, [FromBody] EquipamentosRequestEdit equipamentoRequest) => {
-                    var equipamentoAAtualizar = dal.RecuperarPor(e => e.Id == equipamentoRequest.Id);
-                    if (equipamentoAAtualizar is null)
-                    {
-                        return Results.NotFound();
-                    }
-                    equipamentoAAtualizar.Nome = equipamentoRequest.Nome;
-                    equipamentoAAtualizar.Quantidade = equipamentoRequest.Quantidade;
-                    dal.Atualizar(equipamentoAAtualizar);
-                    return Results.Ok();
-                }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
-            }
+            groupBuilder.MapPut("{id}", ([FromServices] DAL<Equipamentos> dal, [FromBody] EquipamentosRequestEdit equipamentoRequest) =>
+            {
+                var equipamentoAAtualizar = dal.RecuperarPor(e => e.Id == equipamentoRequest.Id);
+                if (equipamentoAAtualizar is null)
+                {
+                    return Results.NotFound();
+                }
+                equipamentoAAtualizar.Nome = equipamentoRequest.Nome;
+                equipamentoAAtualizar.Quantidade = equipamentoRequest.Quantidade;
+                dal.Atualizar(equipamentoAAtualizar);
+                return Results.Ok();
+            }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
+
         }
+    }
     }
 
 

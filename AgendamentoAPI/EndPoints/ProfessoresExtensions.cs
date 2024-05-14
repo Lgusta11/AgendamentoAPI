@@ -19,18 +19,26 @@ namespace Agendamentos.EndPoints
             var groupBuilder = app.MapGroup("professores")
             .WithTags("Professores");
 
-            #region Endpoint Professores
-            groupBuilder.MapGet("", ([FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] ProfessoresRequestEdit professoresRequestEdit) =>
+
+            groupBuilder.MapGet("", async ([FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager) =>
             {
-              
                 var listaDeProfessores = dal.Listar();
                 if (listaDeProfessores is null)
                 {
                     return Results.NotFound();
                 }
-                var listaDeProfessoresResponse = listaDeProfessores.Select(a => new ProfessoresResponse(a.Id, a.Nome, a.email!)).ToList();
+                var listaDeProfessoresResponse = new List<ProfessoresResponse>();
+                foreach (var professor in listaDeProfessores)
+                {
+                    var user = await userManager.FindByIdAsync(professor.Id.ToString());
+                    if (user != null)
+                    {
+                        listaDeProfessoresResponse.Add(new ProfessoresResponse(professor.Id, professor.Nome, user.Email));
+                    }
+                }
                 return Results.Ok(listaDeProfessoresResponse);
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
+
 
             groupBuilder.MapGet("{id}", ([FromServices] DAL<Professores> dal, int id) =>
             {
@@ -44,7 +52,8 @@ namespace Agendamentos.EndPoints
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
 
-            groupBuilder.MapDelete("{id}", ([FromServices] DAL<Professores> dal, int id) => {
+            groupBuilder.MapDelete("{id}", ([FromServices] DAL<Professores> dal, int id) =>
+            {
                 var Professores = dal.RecuperarPor(a => a.Id == id);
                 if (Professores is null)
                 {
@@ -93,18 +102,23 @@ namespace Agendamentos.EndPoints
                 return Results.Ok("Professor atualizado com sucesso.");
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
-            #endregion
+       
         }
 
-        private static ICollection<ProfessoresResponse> EntityListToResponseList(IEnumerable<Professores> listaDeProfessores)
+        private static async Task<ICollection<ProfessoresResponse>> EntityListToResponseList(IEnumerable<Professores> listaDeProfessores, UserManager<PessoaComAcesso> userManager)
         {
-
-            return listaDeProfessores.Select(a => EntityToResponse(a)).ToList();
+            var tasks = listaDeProfessores.ToList().Select(a => EntityToResponse(a, userManager)).ToArray();
+            var results = await Task.WhenAll(tasks);
+            return results.ToList();
         }
 
-        private static ProfessoresResponse EntityToResponse(Professores Professores)
+
+
+
+        private static async Task<ProfessoresResponse> EntityToResponse(Professores Professores, UserManager<PessoaComAcesso> userManager)
         {
-            return new ProfessoresResponse(Professores.Id, Professores.Nome, Professores.email!);
+            var user = await userManager.FindByIdAsync(Professores.Id.ToString());
+            return new ProfessoresResponse(Professores.Id, Professores.Nome, user?.Email);
         }
     }
-}
+    }
