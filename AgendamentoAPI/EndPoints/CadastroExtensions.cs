@@ -27,8 +27,9 @@ namespace AgendamentoAPI.EndPoints
                 // Verifique se o papel de administrador existe, se não, crie um
                 if (!await roleManager.RoleExistsAsync("Admin"))
                 {
-                    var adminRole = new IdentityRole<int> { Name = "Admin" };
-                    await roleManager.CreateAsync((Admin)adminRole);
+                    var adminRole = new Admin { Name = "Admin" };
+                    await roleManager.CreateAsync(adminRole);
+
                 }
 
                 if (adminRequest.Senha != adminRequest.ConfirmacaoSenha)

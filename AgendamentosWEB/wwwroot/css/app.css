@@ -136,8 +136,23 @@ input[type=text] {
 .mud-navmenu.mud-navmenu-default .mud-nav-link.active:not(.mud-nav-link-disabled),
 .mud-navmenu.mud-navmenu-default .mud-nav-link i,
 .mud-navmenu.mud-navmenu-primary .mud-nav-link.active:not(.mud-nav-link-disabled) .mud-nav-link-icon,
-.mud-nav-link:not(.mud-nav-link-disabled) .mud-nav-link-icon.mud-nav-link-icon-default {
+.mud-nav-link:not(.mud-nav-link-disabled) .mud-nav-link-icon.mud-nav-link-icon-default,
+.mud-navmenu.mud-navmenu-primary .mud-nav-link.active:not(.mud-nav-link-disabled) {
     color: #ffffff;
     background-color: var(--mud-palette-action-default-hover);
 }
 
+.mud-navmenu.mud-navmenu-primary .mud-nav-link.active:not(.mud-nav-link-disabled) {
+    color: #ffffff;
+    background-color: #4c7c4c00;
+}
+
+.mud-button-outlined {
+    color: rgba(255, 255, 255, 1);
+    border: 1px solid rgba(255, 255, 255, 1);
+    padding: 5px 15px;
+}
+
+.mud-overlay .mud-overlay-scrim {
+    display: none !important;
+}

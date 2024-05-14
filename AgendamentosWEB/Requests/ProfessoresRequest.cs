@@ -4,17 +4,17 @@ namespace AgendamentosWEB.Requests
 {
     public record ProfessoresRequest {
         [Required]
-        public string? Nome { get; set; }
+        public string? nome { get; set; }
 
         [Required, EmailAddress] 
-        public string? Email { get; set; }
+        public string? email { get; set; }
 
 
             [Required, MinLength(6)] 
-            public string? Senha { get; set; }
+            public string? senha { get; set; }
 
             [Required] 
-            public string? ConfirmacaoSenha { get; set; }
+            public string? confirmacaoSenha { get; set; }
 
 
         public ProfessoresRequest() { }
@@ -22,10 +22,10 @@ namespace AgendamentosWEB.Requests
         public ProfessoresRequest(string confirmacaoSenha, string nome, string senha, string email)
         {
     
-            Nome = nome;
-            Senha = senha;
-            Email = email;
-            ConfirmacaoSenha = confirmacaoSenha;
+            nome = nome;
+            senha = senha;
+            email = email;
+            confirmacaoSenha = confirmacaoSenha;
 
         }
 

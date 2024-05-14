@@ -19,7 +19,6 @@ namespace Agendamentos.EndPoints
             var groupBuilder = app.MapGroup("professores")
             .WithTags("Professores");
 
-
             groupBuilder.MapGet("", async ([FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager) =>
             {
                 var listaDeProfessores = dal.Listar();
@@ -30,7 +29,7 @@ namespace Agendamentos.EndPoints
                 var listaDeProfessoresResponse = new List<ProfessoresResponse>();
                 foreach (var professor in listaDeProfessores)
                 {
-                    var user = await userManager.FindByIdAsync(professor.Id.ToString());
+                    var user = await userManager.FindByIdAsync(professor.UserId);
                     if (user != null)
                     {
                         listaDeProfessoresResponse.Add(new ProfessoresResponse(professor.Id, professor.Nome, user.Email));
@@ -38,6 +37,7 @@ namespace Agendamentos.EndPoints
                 }
                 return Results.Ok(listaDeProfessoresResponse);
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
+
 
 
             groupBuilder.MapGet("{id}", ([FromServices] DAL<Professores> dal, int id) =>
@@ -72,7 +72,7 @@ namespace Agendamentos.EndPoints
                     return Results.NotFound();
                 }
 
-                var user = await userManager.FindByEmailAsync(professoresAAtualizar.email!);
+                var user = await userManager.FindByIdAsync(professoresAAtualizar.UserId);
                 if (user == null)
                 {
                     return Results.NotFound("Usuário não encontrado.");
@@ -102,7 +102,8 @@ namespace Agendamentos.EndPoints
                 return Results.Ok("Professor atualizado com sucesso.");
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
-       
+
+
         }
 
         private static async Task<ICollection<ProfessoresResponse>> EntityListToResponseList(IEnumerable<Professores> listaDeProfessores, UserManager<PessoaComAcesso> userManager)
