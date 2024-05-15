@@ -34,6 +34,12 @@ namespace Agendamentos.EndPoints
                     {
                         listaDeProfessoresResponse.Add(new ProfessoresResponse(professor.Id, professor.Nome, user.Email));
                     }
+                    else
+                    {
+                        // Aqui você pode lidar com a situação em que o UserId não corresponde a nenhum usuário
+                        // Por exemplo, você pode adicionar um log de erro ou lançar uma exceção
+                        Console.WriteLine($"Erro: UserId {professor.UserId} não encontrado na tabela de usuários.");
+                    }
                 }
                 return Results.Ok(listaDeProfessoresResponse);
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
@@ -78,29 +84,17 @@ namespace Agendamentos.EndPoints
                     return Results.NotFound("Usuário não encontrado.");
                 }
 
-                // Verifica se a senha e a confirmação de senha correspondem
-                if (professoresRequestEdit.senha != professoresRequestEdit.confirmacaoSenha)
-                {
-                    return Results.BadRequest(new { message = "A senha e a confirmação de senha não correspondem." });
-                }
-
                 // Atualiza o nome do professor
                 professoresAAtualizar.Nome = professoresRequestEdit.nome;
 
-                // Atualiza o email e a senha do usuário
+                // Atualiza o email do usuário
                 user.Email = professoresRequestEdit.email;
                 user.UserName = professoresRequestEdit.nome;
-                var passwordResetToken = await userManager.GeneratePasswordResetTokenAsync(user);
-                var passwordChangeResult = await userManager.ResetPasswordAsync(user, passwordResetToken, professoresRequestEdit.senha);
-
-                if (!passwordChangeResult.Succeeded)
-                {
-                    return Results.BadRequest(passwordChangeResult.Errors.Select(x => x.Description));
-                }
 
                 dal.Atualizar(professoresAAtualizar);
                 return Results.Ok("Professor atualizado com sucesso.");
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
+
 
 
 

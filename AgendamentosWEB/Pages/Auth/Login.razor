@@ -58,6 +58,9 @@
 
             // Recupere as funções do usuário
             roles = await loginAPI.GetUserRolesAsync(email!);
+            // Após o login bem-sucedido, execute este código
+            await JS.InvokeVoidAsync("location.reload");
+
 
             if (roles.Contains("Admin"))
             {

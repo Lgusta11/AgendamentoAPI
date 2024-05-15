@@ -132,14 +132,9 @@ input[type=text] {
 .mud-navmenu.mud-navmenu-default .mud-nav-link i {
     color: #ffffff;
 }
-
-.mud-navmenu.mud-navmenu-default .mud-nav-link.active:not(.mud-nav-link-disabled),
-.mud-navmenu.mud-navmenu-default .mud-nav-link i,
-.mud-navmenu.mud-navmenu-primary .mud-nav-link.active:not(.mud-nav-link-disabled) .mud-nav-link-icon,
-.mud-nav-link:not(.mud-nav-link-disabled) .mud-nav-link-icon.mud-nav-link-icon-default,
-.mud-navmenu.mud-navmenu-primary .mud-nav-link.active:not(.mud-nav-link-disabled) {
+.mud-navmenu.mud-navmenu-default .mud-nav-link.active:not(.mud-nav-link-disabled), .mud-navmenu.mud-navmenu-default .mud-nav-link i, .mud-navmenu.mud-navmenu-primary .mud-nav-link.active:not(.mud-nav-link-disabled) .mud-nav-link-icon, .mud-nav-link:not(.mud-nav-link-disabled) .mud-nav-link-icon.mud-nav-link-icon-default, .mud-navmenu.mud-navmenu-primary .mud-nav-link.active:not(.mud-nav-link-disabled) {
     color: #ffffff;
-    background-color: var(--mud-palette-action-default-hover);
+    background-color: rgb(18 18 18 / 0%);
 }
 
 .mud-navmenu.mud-navmenu-primary .mud-nav-link.active:not(.mud-nav-link-disabled) {
