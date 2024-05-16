@@ -1,5 +1,4 @@
 ﻿namespace AgendamentoAPI.Response
 {
-    public record AgendamentoResponse(int Id, DateTime Data, int AulaId, int EquipamentoId, int ProfessorId, string ProfessorNome);
-
+    public record AgendamentoResponse(int Id, DateTime Data, string NomeAula, string NomeEquipamento, string ProfessorNome);
 }

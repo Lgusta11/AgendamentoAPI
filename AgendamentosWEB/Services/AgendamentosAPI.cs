@@ -1,14 +1,17 @@
 ﻿using AgendamentosWEB.Requests;
 using AgendamentosWEB.Response;
+using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
 
 namespace AgendamentosWEB.Services;
 public class AgendamentosAPI
 {
     private readonly HttpClient _httpClient;
-    public AgendamentosAPI(IHttpClientFactory factory)
+    private readonly ILogger<AgendamentosAPI> _logger;
+    public AgendamentosAPI(IHttpClientFactory factory, ILogger<AgendamentosAPI> logger)
     {
         _httpClient = factory.CreateClient("API");
+        _logger = logger;
     }
 
     public async Task<ICollection<AgendamentoResponse>?> GetAgendamentosAsync()
@@ -35,4 +38,33 @@ public class AgendamentosAPI
     {
         await _httpClient.PutAsJsonAsync($"agendamentos/{agendamento.Id}", agendamento);
     }
+
+    public async Task<string> GetNomeAulaAsync(int aulaId)
+    {
+        var response = await _httpClient.GetAsync($"aulas/{aulaId}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var aula = await response.Content.ReadFromJsonAsync<AulasResponse>();
+            return aula.Aula;
+        }
+
+        _logger.LogWarning("Não foi possível recuperar o nome da aula {AulaId}", aulaId);
+        return null;
+    }
+
+    public async Task<string> GetNomeEquipamentoAsync(int equipamentoId)
+    {
+        var response = await _httpClient.GetAsync($"equipamentos/{equipamentoId}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var equipamento = await response.Content.ReadFromJsonAsync<EquipamentoResponse>();
+            return equipamento.Nome;
+        }
+
+        _logger.LogWarning("Não foi possível recuperar o nome do equipamento {EquipamentoId}", equipamentoId);
+        return null;
+    }
+
 }

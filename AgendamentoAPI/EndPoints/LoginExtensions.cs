@@ -74,10 +74,14 @@ namespace AgendamentoAPI.EndPoints
                 return Results.Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token), redirectUrl });
             });
 
-
-            groupBuilder.MapGet("GetRoles/{email}", async ([FromServices] UserManager<PessoaComAcesso> userManager, string email) =>
+            groupBuilder.MapGet("GetRoles/{emailOrUserName}", async ([FromServices] UserManager<PessoaComAcesso> userManager, string emailOrUserName) =>
             {
-                var user = await userManager.FindByEmailAsync(email);
+                var user = await userManager.FindByEmailAsync(emailOrUserName);
+                if (user == null)
+                {
+                    user = await userManager.FindByNameAsync(emailOrUserName);
+                }
+
                 if (user == null)
                 {
                     return Results.NotFound(new { message = "Usuário não encontrado." });
@@ -86,6 +90,18 @@ namespace AgendamentoAPI.EndPoints
                 var roles = await userManager.GetRolesAsync(user);
                 return Results.Ok(new { roles });
             });
+
+            groupBuilder.MapGet("GetUserName/{email}", async ([FromServices] UserManager<PessoaComAcesso> userManager, string email) =>
+            {
+                var user = await userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    return Results.NotFound(new { message = "Usuário não encontrado." });
+                }
+
+                return Results.Ok(new { userName = user.UserName });
+            });
+
 
             groupBuilder.MapGet("manage/info", async (HttpContext context) =>
             {

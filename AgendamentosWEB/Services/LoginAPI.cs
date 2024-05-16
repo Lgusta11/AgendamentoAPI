@@ -31,7 +31,7 @@ namespace AgendamentosWEB.Services
                 var info = await response.Content.ReadFromJsonAsync<InfoPessoaResponse>();
                 Claim[] dados =
                 {
-                    new Claim(ClaimTypes.Name, info?.Email!),
+                    new Claim(ClaimTypes.Name, info?.UserName!),
                     new Claim(ClaimTypes.Email, info?.Email!)
                 };
 
@@ -78,11 +78,11 @@ namespace AgendamentosWEB.Services
             }
         }
 
-        public async Task<List<string>> GetUserRolesAsync(string email)
+        public async Task<List<string>> GetUserRolesAsync(string emailOrUserName)
         {
             try
             {
-                var response = await _httpClient.GetAsync($"auth/GetRoles/{email}");
+                var response = await _httpClient.GetAsync($"auth/GetRoles/{emailOrUserName}");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -91,15 +91,39 @@ namespace AgendamentosWEB.Services
                     return roles!;
                 }
 
-                _logger.LogWarning("Não foi possível recuperar as funções para o usuário {Email}", email);
+                _logger.LogWarning("Não foi possível recuperar as funções para o usuário {EmailOrUserName}", emailOrUserName);
                 return new List<string>();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao recuperar as funções para o usuário {Email}", email);
+                _logger.LogError(ex, "Erro ao recuperar as funções para o usuário {EmailOrUserName}", emailOrUserName);
                 return new List<string>();
             }
         }
+
+        public async Task<string> GetUserNameAsync(string email)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"auth/GetUserName/{email}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseObject = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+                    var userName = responseObject["userName"];
+                    return userName;
+                }
+
+                _logger.LogWarning("Não foi possível recuperar o nome do usuário {Email}", email);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao recuperar o nome do usuário {Email}", email);
+                return null;
+            }
+        }
+
 
         public async Task LogoutAsync()
         {

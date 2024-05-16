@@ -91,9 +91,17 @@ namespace Agendamentos.EndPoints
                 user.Email = professoresRequestEdit.email;
                 user.UserName = professoresRequestEdit.nome;
 
+                // Atualiza o email na tabela de usuários do Identity
+                var result = await userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                {
+                    return Results.Problem("Não foi possível atualizar o email do usuário.");
+                }
+
                 dal.Atualizar(professoresAAtualizar);
                 return Results.Ok("Professor atualizado com sucesso.");
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
+
 
 
 

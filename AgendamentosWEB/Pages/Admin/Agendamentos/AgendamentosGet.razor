@@ -1,8 +1,6 @@
-﻿@page "/admin/home"
-@inject AgendamentosAPI agendamentosAPI
+﻿@inject AgendamentosAPI agendamentosAPI
 @inject NavigationManager Navigation
-
-<h1>BEM VINDO AO SISTEMA DE AGENDAMENTO AFS</h1>
+@page "/admin/agendamentos"
 
 @if (agendamentos == null)
 {
@@ -10,11 +8,9 @@
 }
 else
 {
-    var agendamentosHoje = agendamentos.Where(a => a.Data.Date == DateTime.Today);
-    foreach (var agendamento in agendamentosHoje.Skip((currentPage - 1) * 4).Take(4))
+    foreach (var agendamento in agendamentos.Skip((currentPage - 1) * 4).Take(4))
     {
         <MudCard>
-            <h2>Agendamentos do dia!</h2>
             <MudCardHeader>
                 <CardHeaderContent>
                     <MudText Typo="Typo.h6">@agendamento.ProfessorNome</MudText>
@@ -28,7 +24,7 @@ else
         </MudCard>
     }
 
-    <MudPagination Variant="Variant.Filled" Count="((agendamentosHoje.Count() - 1) / 4) + 1" @bind-CurrentPage="currentPage" />
+    <MudPagination Variant="Variant.Filled" Count="((agendamentos.Count - 1) / 4) + 1" @bind-CurrentPage="currentPage" />
 }
 
 @code {

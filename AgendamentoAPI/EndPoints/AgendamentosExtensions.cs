@@ -18,7 +18,7 @@ namespace Agendamentos.EndPoints
 
 
 
-                groupBuilder.MapGet("", ([FromServices] DAL<Agendamento> dal, [FromServices] DAL<Professores> professorDal) =>
+                groupBuilder.MapGet("", async ([FromServices] DAL<Agendamento> dal, [FromServices] DAL<Professores> professorDal, DAL<Aulas> aulasDal, DAL<Equipamentos> equipamentosDal) =>
                 {
                     var listaDeAgendamentos = dal.Listar();
                     if (listaDeAgendamentos is null)
@@ -29,9 +29,11 @@ namespace Agendamentos.EndPoints
                     foreach (var agendamento in listaDeAgendamentos)
                     {
                         var professor = professorDal.RecuperarPor(p => p.Id == agendamento.ProfessorId);
-                        if (professor != null)
+                        var aula = aulasDal.RecuperarPor(a => a.Id == agendamento.AulaId);
+                        var equipamento = equipamentosDal.RecuperarPor(e => e.Id == agendamento.EquipamentoId);
+                        if (professor != null && aula != null && equipamento != null)
                         {
-                            var agendamentoResponse = new AgendamentoResponse(agendamento.Id, agendamento.Data, agendamento.AulaId, agendamento.EquipamentoId, agendamento.ProfessorId, professor.Nome);
+                            var agendamentoResponse = new AgendamentoResponse(agendamento.Id, agendamento.Data, aula.Aula, equipamento.Nome, professor.Nome);
                             listaDeAgendamentosResponse.Add(agendamentoResponse);
                         }
                     }
@@ -39,9 +41,10 @@ namespace Agendamentos.EndPoints
                 }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
 
-                groupBuilder.MapGet("{id}", ([FromServices] DAL<Agendamento> dal, int professorId, [FromServices] DAL<Professores> professorDal) =>
+
+                groupBuilder.MapGet("{id}", async ([FromServices] DAL<Agendamento> dal, [FromServices] DAL<Professores> professorDal, DAL<Aulas> aulasDal, DAL<Equipamentos> equipamentosDal, int professorId) =>
                 {
-                    var agendamentosDoProfessor = dal.Listar();
+                    var agendamentosDoProfessor = dal.Listar(a => a.ProfessorId == professorId);
                     if (!agendamentosDoProfessor.Any())
                     {
                         return Results.NotFound();
@@ -50,9 +53,11 @@ namespace Agendamentos.EndPoints
                     foreach (var agendamento in agendamentosDoProfessor)
                     {
                         var professor = professorDal.RecuperarPor(p => p.Id == agendamento.ProfessorId);
-                        if (professor != null)
+                        var aula = aulasDal.RecuperarPor(a => a.Id == agendamento.AulaId);
+                        var equipamento = equipamentosDal.RecuperarPor(e => e.Id == agendamento.EquipamentoId);
+                        if (professor != null && aula != null && equipamento != null)
                         {
-                            var agendamentoResponse = new AgendamentoResponse(agendamento.Id, agendamento.Data, agendamento.AulaId, agendamento.EquipamentoId, agendamento.ProfessorId, professor.Nome);
+                            var agendamentoResponse = new AgendamentoResponse(agendamento.Id, agendamento.Data, aula.Aula, equipamento.Nome, professor.Nome);
                             listaDeAgendamentosResponse.Add(agendamentoResponse);
                         }
                     }

@@ -62,7 +62,7 @@ namespace AgendamentoAPI.EndPoints
                     return Results.BadRequest(new { message = "A senha e a confirmação de senha não correspondem." });
                 }
 
-                var user = new PessoaComAcesso { UserName = professoresRequest.email, Email = professoresRequest.email };
+                var user = new PessoaComAcesso { UserName = professoresRequest.nome, Email = professoresRequest.email };
                 var result = await userManager.CreateAsync(user, professoresRequest.senha);
 
                 if (result.Succeeded)
