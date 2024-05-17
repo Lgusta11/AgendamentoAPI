@@ -16,6 +16,8 @@ namespace Agendamentos.EndPoints
                 var groupBuilder = app.MapGroup("agendamentos")
                 .WithTags("Agendamentos");
 
+               
+
 
 
                 groupBuilder.MapGet("", async ([FromServices] DAL<Agendamento> dal, [FromServices] DAL<Professores> professorDal, DAL<Aulas> aulasDal, DAL<Equipamentos> equipamentosDal) =>

@@ -21,6 +21,8 @@ builder.Services.AddIdentity<PessoaComAcesso, Admin>()
     .AddRoleManager<RoleManager<Admin>>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddHostedService<CleanupService>();
+
 builder.Services.AddLogging();
 builder.Services.AddScoped<DAL<Aulas>>();
 builder.Services.AddScoped<DAL<Equipamentos>>();
