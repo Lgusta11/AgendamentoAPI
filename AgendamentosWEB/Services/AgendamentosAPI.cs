@@ -67,4 +67,10 @@ public class AgendamentosAPI
         return null;
     }
 
+    public async Task<InfoPessoaResponse> GetUserInfoAsync()
+    {
+        var response = await _httpClient.GetAsync("auth/manage/info");
+        return await response.Content.ReadFromJsonAsync<InfoPessoaResponse>();
+    }
+
 }

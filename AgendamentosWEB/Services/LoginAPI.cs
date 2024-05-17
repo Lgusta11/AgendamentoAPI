@@ -144,5 +144,19 @@ namespace AgendamentosWEB.Services
             await GetAuthenticationStateAsync();
             return autenticado;
         }
+
+        public async Task<InfoPessoaResponse> GetUserInfoAsync()
+        {
+            var response = await _httpClient.GetAsync("auth/manage/info");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<InfoPessoaResponse>();
+            }
+            else
+            {
+                _logger.LogError("Erro ao recuperar informações do usuário");
+                return null;
+            }
+        }
     }
 }

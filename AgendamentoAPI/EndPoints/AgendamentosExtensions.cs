@@ -90,7 +90,7 @@ namespace Agendamentos.EndPoints
                     dal.Adicionar(agendamento);
 
                   
-                    return Results.Ok();
+                    return Results.Created();
                 });
 
 

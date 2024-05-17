@@ -116,6 +116,7 @@ namespace AgendamentoAPI.EndPoints
 
                 var userInfo = new
                 {
+                    user.Id,
                     user.Email,
                     user.UserName,
                     Roles = roles
