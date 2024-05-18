@@ -4,39 +4,36 @@
 @inject EquipamentosAPI equipamentosAPI
 @inject NavigationManager Navigation
 @inject LoginAPI loginAPI
+@inject ISnackbar Snackbar
 
 <h3>Cadastrar Agendamento</h3>
 
-<MudForm @ref="form" OnValidSubmit="HandleValidSubmit">
-    <MudSelect T="AulasResponse" Label="Escolha a aula" @bind-Value="aulaSelecionada">
-        @foreach (var aula in aulas)
-        {
-            <MudSelectItem Value="aula">@aula.Aula</MudSelectItem>
-        }
-    </MudSelect>
+@if (aulas == null || equipamentos == null)
+{
+    <p>Carregando...</p>
+}
+else
+{
+    <MudForm @ref="form">
+        <MudSelect T="AulasResponse" Label="Escolha a aula" @bind-Value="aulaSelecionada">
+            @foreach (var aula in aulas)
+            {
+                <MudSelectItem Value="aula">@aula.Aula</MudSelectItem>
+            }
+        </MudSelect>
 
-    <MudSelect T="EquipamentoResponse" Label="Escolha o equipamento" @bind-Value="equipamentoSelecionado">
-        @foreach (var equipamento in equipamentos)
-        {
-            <MudSelectItem Value="equipamento">@equipamento.Nome</MudSelectItem>
-        }
-    </MudSelect>
+        <MudSelect T="EquipamentoResponse" Label="Escolha o equipamento" @bind-Value="equipamentoSelecionado">
+            @foreach (var equipamento in equipamentos)
+            {
+                <MudSelectItem Value="equipamento">@equipamento.Nome</MudSelectItem>
+            }
+        </MudSelect>
 
-    <MudDatePicker Label="Escolha uma data" FirstDayOfWeek="DayOfWeek.Monday" @bind-Date="dataSelecionada" PickerActions="@((data) =>
-    {
-        return new RenderFragment(builder =>
-        {
-            builder.OpenComponent<MudButton>(0);
-            builder.AddAttribute(1, "ChildContent", (RenderFragment)(builder2 => builder2.AddContent(0, "OK")));
-            builder.AddAttribute(2, "OnClick", EventCallback.Factory.Create<MouseEventArgs>(this, (e) => { data.Close(); return Task.CompletedTask; }));
-            builder.AddAttribute(3, "Color", Color.Primary);
-            builder.AddAttribute(4, "Variant", Variant.Filled);
-            builder.CloseComponent();
-        });
-    })" DisabledFunc="@((DateTime date) => date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)" />
+        <MudDatePicker Label="Escolha uma data" @bind-Date="@dataSelecionada" />
 
-    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">Cadastrar</MudButton>
-</MudForm>
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">Cadastrar</MudButton>
+    </MudForm>
+}
 
 @code {
     private MudForm form;
@@ -45,33 +42,47 @@
     private AulasResponse aulaSelecionada;
     private EquipamentoResponse equipamentoSelecionado;
     private DateTime? dataSelecionada;
-    [Inject] ISnackbar? Snackbar { get; set; }
-
 
     protected override async Task OnInitializedAsync()
     {
-        aulas = await aulasAPI.GetAulasAsync();
-        equipamentos = await equipamentosAPI.GetEquipamentosAsync();
+        try
+        {
+            aulas = await aulasAPI.GetAulasAsync() ?? new List<AulasResponse>();
+            equipamentos = await equipamentosAPI.GetEquipamentosAsync() ?? new List<EquipamentoResponse>();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erro ao carregar dados: {ex.Message}", Severity.Error);
+        }
     }
 
-    private async Task HandleValidSubmit()
+    private async Task Agendar()
     {
+        // Verifica se os dados foram preenchidos corretamente
+        if (aulaSelecionada == null || equipamentoSelecionado == null || dataSelecionada == null)
+        {
+            Snackbar.Add("Por favor, preencha todos os campos.", Severity.Error);
+            return;
+        }
+
         var info = await loginAPI.GetUserInfoAsync();
-        var professorId = info.Id; // O ID do professor é obtido da API auth/manage/info
+        if (info == null)
+        {
+            Snackbar.Add("Erro ao obter informações do usuário.", Severity.Error);
+            return;
+        }
+
+        var professorId = info.Id;
         var agendamento = new AgendamentoRequest(dataSelecionada.Value, aulaSelecionada.Id, equipamentoSelecionado.Id, professorId);
 
         try
         {
             await agendamentosAPI.AddAgendamentoAsync(agendamento);
             Snackbar.Add("Agendamento criado com sucesso!", Severity.Success);
-            Navigation.NavigateTo("/admin/agendamentos");
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Erro ao criar agendamento: {ex.Message}", Severity.Error);
         }
     }
-
-
-
 }

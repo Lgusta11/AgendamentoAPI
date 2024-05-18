@@ -16,7 +16,7 @@ namespace Agendamentos.EndPoints
                 var groupBuilder = app.MapGroup("agendamentos")
                 .WithTags("Agendamentos");
 
-               
+
 
 
 
@@ -89,13 +89,13 @@ namespace Agendamentos.EndPoints
                     var agendamento = new Agendamento { Data = agendamentoRequest.Data, AulaId = agendamentoRequest.AulaId, EquipamentoId = agendamentoRequest.EquipamentoId, ProfessorId = agendamentoRequest.ProfessorId };
                     dal.Adicionar(agendamento);
 
-                  
+
                     return Results.Created();
                 });
 
 
 
-                groupBuilder.MapDelete("{id}",  ([FromServices] DAL<Agendamento> dal, int id, [FromServices] PessoaComAcesso user) =>
+                groupBuilder.MapDelete("{id}", ([FromServices] DAL<Agendamento> dal, int id, [FromServices] PessoaComAcesso user) =>
                 {
                     var agendamento = dal.RecuperarPor(a => a.Id == id);
                     if (agendamento is null)
@@ -104,7 +104,7 @@ namespace Agendamentos.EndPoints
                     }
                     dal.Deletar(agendamento);
 
-                  
+
                     return Results.NoContent();
                 });
 
@@ -127,6 +127,6 @@ namespace Agendamentos.EndPoints
             }
         }
 
-       
+
     }
 }

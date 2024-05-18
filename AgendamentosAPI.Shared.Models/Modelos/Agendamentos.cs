@@ -16,6 +16,7 @@ namespace Agendamentos.Shared.Modelos.Modelos
         public virtual Equipamentos? Equipamento { get; set; }
         public int ProfessorId { get; set; }
         public virtual Professores? Professor { get; set; }
+
     }
 
 }

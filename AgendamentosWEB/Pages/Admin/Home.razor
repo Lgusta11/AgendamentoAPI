@@ -4,13 +4,7 @@
 
 <center>
     <h1>SISTEMA DE AGENDAMENTO AFS!</h1>
-    </center>
-
-
-<MudStack Class="mt-4 mb-4" Row="true" Justify="Justify.SpaceBetween">
-    <MudText Class="mb-4" Typo="Typo.h5">Agendamentos de hoje!</MudText>
-    <MudPagination Count="@totalPaginas" SelectedChanged="PaginaMudou"></MudPagination>
-</MudStack>
+</center>
 
 @if (agendamentos == null)
 {
@@ -19,29 +13,39 @@
 else
 {
     var agendamentosHoje = agendamentos.Where(a => a.Data.Date == DateTime.Today);
-    <MudGrid>
-        @foreach (var agendamento in agendamentosHoje) // Modificado aqui
-        {
-            <MudItem xs="3">
-                <MudCard>
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            <MudText Typo="Typo.h6">@agendamento.ProfessorNome</MudText>
-                        </CardHeaderContent>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        <MudText>Aula: @agendamento.NomeAula</MudText>
-                        <MudText>Equipamento: @agendamento.NomeEquipamento</MudText>
-                        <MudText>Data: @agendamento.Data.ToString("dd/MM/yyyy")</MudText>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-        }
-    </MudGrid>
+    @if (!agendamentosHoje.Any())
+    {
+        <MudText Typo="Typo.h6">Não há agendamentos para hoje.</MudText>
+    }
+    else
+    {
+        <MudStack Class="mt-4 mb-4" Row="true" Justify="Justify.SpaceBetween">
+            <MudText Class="mb-4" Typo="Typo.h5">Agendamentos de hoje!</MudText>
+            <MudPagination Count="@totalPaginas" SelectedChanged="PaginaMudou"></MudPagination>
+        </MudStack>
+        <MudGrid>
+            @foreach (var agendamento in agendamentosHoje)
+            {
+                <MudItem xs="3">
+                    <MudCard>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">@agendamento.ProfessorNome</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudText>Aula: @agendamento.NomeAula</MudText>
+                            <MudText>Equipamento: @agendamento.NomeEquipamento</MudText>
+                            <MudText>Data: @agendamento.Data.ToString("dd/MM/yyyy")</MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
 }
 
 @code {
-
     private ICollection<AgendamentoResponse>? agendamentos;
     private int currentPage = 1;
     private int tamanho = 4;
@@ -70,4 +74,3 @@ else
             .ToList();
     }
 }
-
