@@ -1,52 +1,115 @@
 ﻿@page "/admin/agendamentos/cadastrar"
+@using AgendamentosWEB.Requests
+@using System.ComponentModel.DataAnnotations
 @inject AgendamentosAPI agendamentosAPI
 @inject AulasAPI aulasAPI
+@inject ProfessoresAPI professoresAPI
 @inject EquipamentosAPI equipamentosAPI
 @inject NavigationManager Navigation
 @inject LoginAPI loginAPI
 @inject ISnackbar Snackbar
 
-<h3>Cadastrar Agendamento</h3>
+<AuthorizeView>
+    <Authorized Context="authContext">
+        <h3>Cadastrar Agendamento</h3>
 
-@if (aulas == null || equipamentos == null)
-{
-    <p>Carregando...</p>
-}
-else
-{
-    <MudForm @ref="form">
-        <MudSelect T="AulasResponse" Label="Escolha a aula" @bind-Value="aulaSelecionada">
-            @foreach (var aula in aulas)
-            {
-                <MudSelectItem Value="aula">@aula.Aula</MudSelectItem>
-            }
-        </MudSelect>
+        @if (aulas == null || equipamentos == null)
+        {
+            <p>Carregando...</p>
+        }
+        else
+        {
+            <EditForm EditContext="@editContext" OnValidSubmit="HandleFormSubmit">
+                <DataAnnotationsValidator />
+                <MudGrid>
+                    <MudItem xs="12" sm="7">
+                        <MudCard>
+                            <MudCardContent>
 
-        <MudSelect T="EquipamentoResponse" Label="Escolha o equipamento" @bind-Value="equipamentoSelecionado">
-            @foreach (var equipamento in equipamentos)
-            {
-                <MudSelectItem Value="equipamento">@equipamento.Nome</MudSelectItem>
-            }
-        </MudSelect>
+                                <MudSelect T="ProfessoresResponse" Label="Escolha o Professor" Required="true" @bind-Value="agendamentoModel.ProfessorSelecionado">
+                                    @foreach (var professor in professores)
+                                    {
+                                        <MudSelectItem Value="professor">@professor.Nome</MudSelectItem>
+                                    }
+                                </MudSelect>
+                                <MudSelect T="AulasResponse" Label="Escolha a aula" Required="true" @bind-Value="agendamentoModel.AulaSelecionada">
+                                    @foreach (var aula in aulas)
+                                    {
+                                        <MudSelectItem Value="aula">@aula.Aula</MudSelectItem>
+                                    }
+                                </MudSelect>
 
-        <MudDatePicker Label="Escolha uma data" @bind-Date="@dataSelecionada" />
+                                <MudSelect T="EquipamentoResponse" Label="Escolha o equipamento" Required="true" @bind-Value="agendamentoModel.EquipamentoSelecionado">
+                                    @foreach (var equipamento in equipamentos)
+                                    {
+                                        <MudSelectItem Value="equipamento">@equipamento.Nome</MudSelectItem>
+                                    }
+                                </MudSelect>
 
-        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">Cadastrar</MudButton>
-    </MudForm>
-}
+                                <MudDatePicker Label="Escolha uma data" Required="true" @bind-Date="@agendamentoModel.DataSelecionada" />
+                            </MudCardContent>
+                            <MudCardActions>
+                                <div class="d-flex align-center justify-space-between mt-4">
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               Disabled="@(!editContext.Validate())"
+                                               Class="ml-auto"
+                                               @onclick="CadastrarAgendamento">
+                                        Cadastrar
+                                    </MudButton>
+                                </div>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                    <MudItem xs="12" sm="5">
+                        <MudPaper Class="pa-4 mud-height-full">
+                            <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                            @if (!string.IsNullOrEmpty(apiError) || !string.IsNullOrEmpty(errorMessage))
+                            {
+                                <MudText Color="Color.Error">
+                                    @apiError @errorMessage
+                                </MudText>
+                            }
+                            else if (success)
+                            {
+                                <MudText Color="Color.Success">Success</MudText>
+                            }
+                            else
+                            {
+                                <MudText Color="@Color.Error">
+                                    <ValidationSummary />
+                                </MudText>
+                            }
+
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+        }
+    </Authorized>
+    <NotAuthorized>
+        @{
+            Navigation.NavigateTo("/auth/login");
+        }
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
-    private MudForm form;
     private ICollection<AulasResponse> aulas;
+    private ICollection<ProfessoresResponse> professores;
     private ICollection<EquipamentoResponse> equipamentos;
-    private AulasResponse aulaSelecionada;
-    private EquipamentoResponse equipamentoSelecionado;
-    private DateTime? dataSelecionada;
+    private AgendamentoFormModel agendamentoModel = new AgendamentoFormModel();
+    private EditContext editContext;
+    bool success;
+    string? apiError;
+    string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
+        editContext = new EditContext(agendamentoModel);
         try
         {
+            professores = await professoresAPI.GetProfessoresAsync() ?? new List<ProfessoresResponse>();
             aulas = await aulasAPI.GetAulasAsync() ?? new List<AulasResponse>();
             equipamentos = await equipamentosAPI.GetEquipamentosAsync() ?? new List<EquipamentoResponse>();
         }
@@ -56,33 +119,73 @@ else
         }
     }
 
-    private async Task Agendar()
+    private async Task HandleFormSubmit()
     {
-        // Verifica se os dados foram preenchidos corretamente
-        if (aulaSelecionada == null || equipamentoSelecionado == null || dataSelecionada == null)
+        try
+        {
+            var agendamento = new AgendamentoRequest(agendamentoModel.DataSelecionada.Value, agendamentoModel.AulaSelecionada.Id, agendamentoModel.EquipamentoSelecionado.Id, agendamentoModel.ProfessorSelecionado.Id);
+
+            var result = await agendamentosAPI.AddAgendamentoAsync(agendamento);
+
+            if (result != null)
+            {
+                if (result.IsSuccessStatusCode)
+                {
+                    Snackbar.Add("Agendamento criado com sucesso!", Severity.Success);
+                    agendamentoModel = new AgendamentoFormModel();
+                    editContext = new EditContext(agendamentoModel);
+                    success = true;
+                    apiError = string.Empty;
+                    Navigation.NavigateTo("/admin/agendamentos");
+                }
+                else
+                {
+                    var content = await result.Content.ReadAsStringAsync();
+                    errorMessage = content;
+                    success = false;
+                }
+            }
+            else
+            {
+                errorMessage = "A resposta do servidor está vazia.";
+                success = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            apiError = $"Erro ao criar agendamento: {ex.Message}";
+            success = false;
+            Snackbar.Add(apiError, Severity.Error);
+        }
+    }
+
+
+
+    private async Task CadastrarAgendamento()
+    {
+        if (!editContext.Validate())
         {
             Snackbar.Add("Por favor, preencha todos os campos.", Severity.Error);
             return;
         }
 
-        var info = await loginAPI.GetUserInfoAsync();
-        if (info == null)
-        {
-            Snackbar.Add("Erro ao obter informações do usuário.", Severity.Error);
-            return;
-        }
-
-        var professorId = info.Id;
-        var agendamento = new AgendamentoRequest(dataSelecionada.Value, aulaSelecionada.Id, equipamentoSelecionado.Id, professorId);
-
-        try
-        {
-            await agendamentosAPI.AddAgendamentoAsync(agendamento);
-            Snackbar.Add("Agendamento criado com sucesso!", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Erro ao criar agendamento: {ex.Message}", Severity.Error);
-        }
+        await HandleFormSubmit();
     }
+
+    public class AgendamentoFormModel
+    {
+        [Required(ErrorMessage = "A aula é obrigatória.")]
+        public AulasResponse? AulaSelecionada { get; set; }
+
+        [Required(ErrorMessage = "O equipamento é obrigatório.")]
+        public EquipamentoResponse? EquipamentoSelecionado { get; set; }
+
+        [Required(ErrorMessage = "A data é obrigatória.")]
+        public DateTime? DataSelecionada { get; set; }
+
+        [Required(ErrorMessage = "O professor é obrigatório.")]
+        public ProfessoresResponse? ProfessorSelecionado { get; set; }
+    }
+
 }
+

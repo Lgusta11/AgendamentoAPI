@@ -24,11 +24,18 @@ public class AgendamentosAPI
         return await _httpClient.GetFromJsonAsync<ICollection<AgendamentoResponse>>($"agendamentos/{professorId}");
     }
 
-    public async Task AddAgendamentoAsync(AgendamentoRequest agendamento)
+    public async Task<HttpResponseMessage> AddAgendamentoAsync(AgendamentoRequest agendamento)
     {
-        await _httpClient.PostAsJsonAsync("agendamentos", agendamento);
+        try
+        {
+            return await _httpClient.PostAsJsonAsync("agendamentos", agendamento);
+        }
+        catch (Exception ex)
+        {
+           
+            throw new Exception("Erro ao adicionar agendamento", ex);
+        }
     }
-
     public async Task DeleteAgendamentoAsync(int id)
     {
         await _httpClient.DeleteAsync($"agendamentos/{id}");

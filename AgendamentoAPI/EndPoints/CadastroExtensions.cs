@@ -55,6 +55,7 @@ namespace AgendamentoAPI.EndPoints
             });
 
             //PROFESSOR
+           
             groupBuilder.MapPost("Cadastro/Professor", async ([FromServices] IHostEnvironment env, [FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] ProfessoresRequest professoresRequest) =>
             {
                 if (professoresRequest.senha != professoresRequest.confirmacaoSenha)
@@ -81,6 +82,7 @@ namespace AgendamentoAPI.EndPoints
                     return Results.BadRequest(result.Errors.Select(x => x.Description));
                 }
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
+
         }
     }
 }
