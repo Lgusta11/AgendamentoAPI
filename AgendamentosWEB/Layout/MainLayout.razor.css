@@ -44,6 +44,10 @@ main {
         .top-row ::deep a, .top-row ::deep .btn-link {
             margin-left: 0;
         }
+
+    .mud-drawer-overlay.mud-drawer-overlay--open.mud-drawer-overlay-responsive.mud-drawer-overlay-md {
+        display: none;
+    }
 }
 
 @media (min-width: 641px) {
@@ -73,5 +77,8 @@ main {
     .top-row, article {
         padding-left: 2rem !important;
         padding-right: 1.5rem !important;
+    }
+    .mud-drawer-overlay.mud-drawer-overlay--open.mud-drawer-overlay-responsive.mud-drawer-overlay-md {
+        display: none;
     }
 }

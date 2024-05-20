@@ -93,6 +93,9 @@
         height: calc(100vh - 3.5rem);
         overflow-y: auto;
     }
+    .mud-drawer-overlay.mud-drawer-overlay--open.mud-drawer-overlay-responsive.mud-drawer-overlay-md {
+        display: none;
+    }
 }
 
 

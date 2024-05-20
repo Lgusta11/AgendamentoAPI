@@ -10,7 +10,7 @@
         @if (!NavigationManager!.Uri.Contains("/auth/login"))
         {
             <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="ToggleDrawer" Style="color: white;" />
-            <div style="flex-grow: 1;"></div>
+            <div style="flex-grow: 1;" DisableOverlay="true"></div>
         }
         <MudImage Class="mud-image" Src="images/afs.png" Style="max-width: 100px; height: auto;"></MudImage>
         <div style="flex-grow: 1;"></div>

@@ -96,7 +96,7 @@ a, .btn-link {
 }
 
     .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Loading");
+        content: var(--blazor-load-percentage-text, "Carregando");
     }
 
 code {
@@ -119,10 +119,7 @@ input[type=text] {
     border-radius: 12px; /* Infelizmente, a propriedade 'outline' não é arredondada! */
 }
 
-    input[type=text]:focus {
-        outline: none; /* Remove a borda padrão e use 'box-shadow' ou 'border' */
-        box-shadow: 0 0 0 2px orange; /* Liberdade total (funciona também com 'border-radius') */
-    }
+   
 
 .mud-navmenu.mud-navmenu-default .mud-nav-link.active:not(.mud-nav-link-disabled) {
     color: #ffffff;
@@ -148,11 +145,21 @@ input[type=text] {
     padding: 5px 15px;
 }
 
-.mud-overlay .mud-overlay-scrim {
-    display: none !important;
-}
 
 .mud-nav-link .mud-nav-link-expand-icon {
     color: #ffffff;
     transition: .3s cubic-bezier(0.25, 0.8, 0.5, 1), visibility 0s;
+}
+
+.mud-drawer-overlay.mud-drawer-overlay--open.mud-drawer-overlay-responsive.mud-drawer-overlay-md {
+    display: none !important;
+}
+
+@media (max-width: 959px) {
+    .mud-drawer-overlay.mud-drawer-overlay--open.mud-drawer-overlay-responsive.mud-drawer-overlay-md {
+        display: none !important;
+    }
+
+
+
 }
