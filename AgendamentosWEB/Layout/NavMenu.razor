@@ -32,13 +32,11 @@
             }
             else if (roles.Contains("Professores"))
             {
-                <MudNavGroup Title="Professor" Expanded="true">
-                    <MudNavLink Href="/admin/home" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-                    <MudNavGroup Title="Equipamentos" Expanded="true">
-                        <MudNavLink Href="/admin/equipamentos">Equipamentos Cadastrados</MudNavLink>
-                        <MudNavLink Href="/admin/equipamentos/cadastrar">Cadastrar Equipamentos</MudNavLink>
+                    <MudNavLink Href="/home" Icon="@Icons.Material.Filled.Home" Style="color:white;">Home</MudNavLink>
+                    <MudNavGroup Title="Agendamentos" Icon="@Icons.Material.Filled.CalendarToday" Expanded="true">
+                        <MudNavLink Href="/agendamentos" Icon="@Icons.Material.Filled.CalendarViewMonth" Style="color:white;">Meus Agendamentos</MudNavLink>
+                        <MudNavLink Href="/agendar" Icon="@Icons.Material.Filled.AddCircle" Style="color:white;">Realizar Agendamento</MudNavLink>
                     </MudNavGroup>
-                </MudNavGroup>
             }
             </MudNavMenu>
         </MudPaper>
