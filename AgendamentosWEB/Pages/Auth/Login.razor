@@ -1,4 +1,4 @@
-﻿@page "/auth/login"
+@page "/auth/login"
 @using Microsoft.AspNetCore.Components.Authorization
 @inject LoginAPI loginAPI
 @inject NavigationManager Navigation
@@ -52,7 +52,7 @@
         var resposta = await loginAPI.LoginAsync(email, senha);
         if (resposta.Sucesso)
         {
-            // Aqui você pode armazenar o token em algum lugar para uso posterior
+            // Aqui armazena o token 
             var tokenAsString = string.Join(",", resposta.Token);
             await JS.InvokeVoidAsync("localStorage.setItem", "MeuCookieJWT", tokenAsString);
 
@@ -78,7 +78,6 @@
         else
         {
             apiError = "Erro: Email ou Senha incorretos!";
-            // Aqui você pode lidar com a resposta de erro, por exemplo, mostrar uma mensagem de erro
             Snackbar!.Add(apiError, Severity.Error);
         }
     }
