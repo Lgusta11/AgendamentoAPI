@@ -9,7 +9,17 @@
 
 @if (agendamentos == null)
 {
+    
     <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    <center>
+        <div style="display: flex; justify-content: center; align-items: center; height: 50vh; width: 60vh;">
+            <MudContainer Class="d-flex flex-column align-items-center justify-content-center">
+                <center><MudIcon Icon="@Icons.Material.Filled.SentimentVeryDissatisfied" Color="Color.Primary" Size="Size.Large" Class="custom-icon" /></center>
+                <MudText Typo="Typo.h5" Class="my-4 mx-2">não tem agendamentos!</MudText>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="IrParaAgendar">Agendar agora</MudButton>
+            </MudContainer>
+        </div>
+    </center>
 }
 else
 {
@@ -61,5 +71,11 @@ else
             .Skip(tamanho * indice)
             .Take(tamanho)
             .ToList();
+    }
+
+    private async Task IrParaAgendar()
+    {
+        Navigation.NavigateTo("/admin/agendamentos/cadastrar");
+
     }
 }

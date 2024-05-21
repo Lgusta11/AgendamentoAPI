@@ -55,7 +55,7 @@ namespace Agendamentos.EndPoints
                 }
                 var professorResponse = new ProfessoresResponse(professor.Id, professor.Nome, professor.email!);
                 return Results.Ok(professorResponse);
-            }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
+            });
 
 
             groupBuilder.MapDelete("{id}", ([FromServices] DAL<Professores> dal, int id) =>
@@ -103,6 +103,22 @@ namespace Agendamentos.EndPoints
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
 
+            groupBuilder.MapGet("getProfessorId/{userName}", async ([FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager, string userName) =>
+            {
+                var user = await userManager.FindByNameAsync(userName);
+                if (user == null)
+                {
+                    return Results.NotFound("Usuário não encontrado.");
+                }
+
+                var professor = dal.RecuperarPor(a => a.UserId == user.Id.ToString());
+                if (professor == null)
+                {
+                    return Results.NotFound("Professor não encontrado.");
+                }
+
+                return Results.Ok(professor.Id);
+            });
 
 
 

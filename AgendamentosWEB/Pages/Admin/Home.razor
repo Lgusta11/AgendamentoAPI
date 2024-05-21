@@ -2,9 +2,7 @@
 @inject AgendamentosAPI agendamentosAPI
 @inject NavigationManager Navigation
 
-<center>
-    <h1>SISTEMA DE AGENDAMENTO AFS!</h1>
-</center>
+
 
 @if (agendamentos == null)
 {
@@ -15,7 +13,15 @@ else
     var agendamentosHoje = agendamentos.Where(a => a.Data.Date == DateTime.Today);
     @if (!agendamentosHoje.Any())
     {
-        <MudText Typo="Typo.h6">Não há agendamentos para hoje.</MudText>
+        <center>
+            <div style="display: flex; justify-content: center; align-items: center; height: 50vh; width: 60vh;">
+                <MudContainer Class="d-flex flex-column align-items-center justify-content-center">
+                    <center><MudIcon Icon="@Icons.Material.Filled.SentimentVeryDissatisfied" Color="Color.Primary" Size="Size.Large" Class="custom-icon" /></center>
+                    <MudText Typo="Typo.h5" Class="my-4 mx-2">Não tem agendamentos para hoje!</MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="IrParaAgendar">Agendar agora</MudButton>
+                </MudContainer>
+            </div>
+        </center>
     }
     else
     {
@@ -58,7 +64,7 @@ else
         listaCompleta = await agendamentosAPI.GetAgendamentosAsync();
         if (listaCompleta is not null)
         {
-            listaCompleta = listaCompleta.OrderByDescending(a => a.Id).ToList();
+            listaCompleta = listaCompleta.Where(a => a.Data.Date == DateTime.Today).OrderByDescending(a => a.Id).ToList();
             totalItens = listaCompleta.Count();
             totalPaginas = Convert.ToInt32(Math.Ceiling((totalItens * 1.0) / tamanho));
             this.PaginaMudou(1);
@@ -72,5 +78,10 @@ else
             .Skip(tamanho * indice)
             .Take(tamanho)
             .ToList();
+    }
+
+    private async Task IrParaAgendar()
+    {
+        Navigation.NavigateTo("/admin/agendamentos/cadastrar");
     }
 }

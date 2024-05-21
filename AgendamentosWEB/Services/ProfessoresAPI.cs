@@ -31,4 +31,9 @@ public class ProfessoresAPI
     {
         await _httpClient.PutAsJsonAsync($"professores/{professor.Id}", professor);
     }
+
+    public async Task<int?> GetProfessorIdByUserNameAsync(string userName)
+    {
+        return await _httpClient.GetFromJsonAsync<int?>($"professores/getProfessorId/{userName}");
+    }
 }

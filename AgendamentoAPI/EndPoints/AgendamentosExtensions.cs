@@ -44,7 +44,7 @@ namespace Agendamentos.EndPoints
 
 
 
-                groupBuilder.MapGet("{id}", async ([FromServices] DAL<Agendamento> dal, [FromServices] DAL<Professores> professorDal, DAL<Aulas> aulasDal, DAL<Equipamentos> equipamentosDal, int professorId) =>
+                groupBuilder.MapGet("{professorId}", async ([FromServices] DAL<Agendamento> dal, [FromServices] DAL<Professores> professorDal, DAL<Aulas> aulasDal, DAL<Equipamentos> equipamentosDal, int professorId) =>
                 {
                     var agendamentosDoProfessor = dal.Listar(a => a.ProfessorId == professorId);
                     if (!agendamentosDoProfessor.Any())

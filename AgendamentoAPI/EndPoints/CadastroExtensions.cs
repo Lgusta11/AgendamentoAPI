@@ -75,11 +75,11 @@ namespace AgendamentoAPI.EndPoints
                     // Atribua a função "Professores" ao usuário
                     await userManager.AddToRoleAsync(user, "Professores");
 
-                    return Results.Ok("Professor registrado com sucesso.");
+                    return Results.CreatedAtRoute("Professor registrado com sucesso.");
                 }
                 else
                 {
-                    return Results.BadRequest(result.Errors.Select(x => x.Description));
+                    return Results.Ok(result.Errors.Select(x => x.Description));
                 }
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
 
