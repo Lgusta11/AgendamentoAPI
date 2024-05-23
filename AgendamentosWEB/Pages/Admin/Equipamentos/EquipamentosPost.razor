@@ -86,7 +86,7 @@
             {
                 await equipamentosAPI.AddEquipamentoAsync(equipamento);
                 await JS.InvokeVoidAsync("alert", "Equipamento cadastrado com sucesso!");
-                model = new EquipamentoFormModel(); // Reset the form
+                model = new EquipamentoFormModel();
                 success = true;
                 apiError = string.Empty;
                
