@@ -3,16 +3,31 @@
 @inject HttpClient _httpClient
 @inject IJSRuntime JS
 @inject CadastroAPI professoresAPI
+@inject NavigationManager NavManager
 
-<MudPaper Elevation="2" Class="pa-5">
-    <MudForm>
-        <MudTextField @bind-Value="professor.nome" Label="Nome" Variant="Variant.Text" FullWidth />
-        <MudTextField @bind-Value="professor.email" Label="Email" Variant="Variant.Text" FullWidth />
-        <MudTextField @bind-Value="professor.senha" Label="Senha" Variant="Variant.Text" FullWidth InputType="InputType.Password" />
-        <MudTextField @bind-Value="professor.confirmacaoSenha" Label="Confirmação de Senha" Variant="Variant.Text" FullWidth InputType="InputType.Password" />
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="CadastrarProfessor">Cadastrar</MudButton>
-    </MudForm>
-</MudPaper>
+
+<center>
+<MudContainer>
+    <MudItem xs="12" sm="7">
+        <MudCard>
+            <MudForm Model="@professor" ValidationDelay="0">
+                <MudCardContent>
+                    <MudTextField @bind-Value="professor.nome" For="@(() => professor.nome)" Immediate="true" Label="Nome" FullWidth Required="true" />
+                    <MudTextField @bind-Value="professor.email" For="@(() => professor.email)" Immediate="true" Label="Email" FullWidth Required="true" />
+                    <MudTextField @bind-Value="professor.senha" For="@(() => professor.senha)" Immediate="true" Label="Senha" FullWidth InputType="InputType.Password" Required="true" />
+                    <MudTextField @bind-Value="professor.confirmacaoSenha" For="@(() => professor.confirmacaoSenha)" Immediate="true" Label="Confirmação de Senha" FullWidth InputType="InputType.Password" Required="true" />
+                </MudCardContent>
+                <MudCardActions>
+                    <div class="d-flex align-center justify-space-between mt-4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="@(async () => await CadastrarProfessor())">Cadastrar</MudButton>
+                    </div>
+                </MudCardActions>
+            </MudForm>
+        </MudCard>
+    </MudItem>
+</MudContainer>
+</center>
+
 
 @code {
     ProfessoresRequest professor = new ProfessoresRequest();
@@ -22,7 +37,6 @@
 
     private async Task CadastrarProfessor()
     {
-        // Validações antes de enviar a solicitação
         if (string.IsNullOrWhiteSpace(professor.nome))
         {
             apiError = "O campo Nome é obrigatório.";
@@ -51,13 +65,12 @@
         var response = await professoresAPI.CadastroProfessorAsync(professor);
         if (response != null)
         {
-            // Aqui você pode lidar com a resposta bem-sucedida, por exemplo, mostrar uma mensagem de sucesso
+            NavManager.NavigateTo("/admin/professores");
             Snackbar.Add("Professor cadastrado com sucesso!", Severity.Success);
         }
         else
         {
             apiError = "Erro ao cadastrar professor.";
-            // Aqui você pode lidar com a resposta de erro, por exemplo, mostrar uma mensagem de erro
             Snackbar.Add(apiError, Severity.Error);
         }
     }

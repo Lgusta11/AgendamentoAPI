@@ -22,14 +22,13 @@ namespace AgendamentoAPI.EndPoints
                 .WithTags("Autenticação");
 
             //ADMIN
-            groupBuilder.MapPost("Cadastro/admin", async ([FromServices] DAL<Admin> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] AdminRequest adminRequest) =>
+            groupBuilder.MapPost("Cadastro/admin", async ([FromServices] DAL<Admin> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<IdentityRole> roleManager, [FromBody] AdminRequest adminRequest) =>
             {
                 // Verifique se o papel de administrador existe, se não, crie um
                 if (!await roleManager.RoleExistsAsync("Admin"))
                 {
-                    var adminRole = new Admin { Name = "Admin" };
+                    var adminRole = new IdentityRole { Name = "Admin" };
                     await roleManager.CreateAsync(adminRole);
-
                 }
 
                 if (adminRequest.Senha != adminRequest.ConfirmacaoSenha)
@@ -51,11 +50,10 @@ namespace AgendamentoAPI.EndPoints
                 var admin = new Admin { Nome = adminRequest.Nome, Email = adminRequest.Email };
                 dal.Adicionar(admin);
 
-                return Results.Ok("Administrador registrado com sucesso.");
+                return Results.Json(new { message = "Administrador registrado com sucesso." });
             });
 
             //PROFESSOR
-           
             groupBuilder.MapPost("Cadastro/Professor", async ([FromServices] IHostEnvironment env, [FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] ProfessoresRequest professoresRequest) =>
             {
                 if (professoresRequest.senha != professoresRequest.confirmacaoSenha)
@@ -75,14 +73,13 @@ namespace AgendamentoAPI.EndPoints
                     // Atribua a função "Professores" ao usuário
                     await userManager.AddToRoleAsync(user, "Professores");
 
-                    return Results.CreatedAtRoute("Professor registrado com sucesso.");
+                    return Results.Json(new { message = "Professor registrado com sucesso." });
                 }
                 else
                 {
-                    return Results.Ok(result.Errors.Select(x => x.Description));
+                    return Results.BadRequest(result.Errors.Select(x => x.Description));
                 }
             }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
-
         }
     }
 }
