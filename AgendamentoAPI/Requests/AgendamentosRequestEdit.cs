@@ -1,5 +1,5 @@
 ﻿namespace AgendamentoAPI.Requests
 {
-    public record AgendamentosRequestEdit(int Id, DateTime Data, int AulaId, int EquipamentoId, int ProfessorId)
-       : AgendamentoRequest(Data, AulaId, EquipamentoId, ProfessorId);
+    public record AgendamentosRequestEdit(int Id, DateTime Data, ICollection<int> AulaIds, int EquipamentoId, int ProfessorId)
+       : AgendamentoRequest(Data, AulaIds, EquipamentoId, ProfessorId);
 }

@@ -25,12 +25,13 @@
                     <MudItem xs="12" sm="7">
                         <MudCard>
                             <MudCardContent>
-                                <MudSelect T="AulasResponse" Label="Escolha a aula" Required="true" @bind-Value="agendamentoModel.AulaSelecionada">
+                                <MudSelect T="AulasResponse" MultiSelection="true" SelectAll="true" SelectAllText="Selecionar todas as aulas" AdornmentIcon="@Icons.Material.Filled.Search" Label="Escolha as aulas" Required="true" SelectedValuesChanged="@(values => UpdateSelectedAulas(values))">
                                     @foreach (var aula in aulas)
                                     {
                                         <MudSelectItem Value="aula">@aula.Aula</MudSelectItem>
                                     }
                                 </MudSelect>
+
 
                                 <MudSelect T="EquipamentoResponse" Label="Escolha o equipamento" Required="true" @bind-Value="agendamentoModel.EquipamentoSelecionado">
                                     @foreach (var equipamento in equipamentos)
@@ -96,6 +97,7 @@
     bool success;
     string? apiError;
     string? errorMessage;
+    private ICollection<AulasResponse> selectedAulas;
 
     protected override async Task OnInitializedAsync()
     {
@@ -111,8 +113,6 @@
                 {
                     professorLogado = await professoresAPI.GetProfessorPorIdAsync(professorId.Value);
                 }
-
-
             }
             aulas = await aulasAPI.GetAulasAsync() ?? new List<AulasResponse>();
             equipamentos = await equipamentosAPI.GetEquipamentosAsync() ?? new List<EquipamentoResponse>();
@@ -123,11 +123,17 @@
         }
     }
 
+    private void UpdateSelectedAulas(IEnumerable<AulasResponse> selected)
+    {
+        selectedAulas = selected.ToList();
+        agendamentoModel.AulasSelecionadas = selectedAulas.Select(a => a.Id).ToList();
+    }
+
     private async Task HandleFormSubmit()
     {
         try
         {
-            var agendamento = new AgendamentoRequest(agendamentoModel.DataSelecionada.Value, agendamentoModel.AulaSelecionada.Id, agendamentoModel.EquipamentoSelecionado.Id, professorLogado.Id);
+            var agendamento = new AgendamentoRequest(agendamentoModel.DataSelecionada.Value, agendamentoModel.AulasSelecionadas, agendamentoModel.EquipamentoSelecionado.Id, professorLogado.Id);
 
             var result = await agendamentosAPI.AddAgendamentoAsync(agendamento);
 
@@ -176,7 +182,7 @@
     public class AgendamentoFormModel
     {
         [Required(ErrorMessage = "A aula é obrigatória.")]
-        public AulasResponse? AulaSelecionada { get; set; }
+        public ICollection<int> AulasSelecionadas { get; set; }
 
         [Required(ErrorMessage = "O equipamento é obrigatório.")]
         public EquipamentoResponse? EquipamentoSelecionado { get; set; }

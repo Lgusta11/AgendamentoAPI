@@ -3,6 +3,7 @@ using AgendamentoAPI.Response;
 using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Dados.Modelos;
 using Agendamentos.Shared.Modelos.Modelos;
+using AgendamentosAPI.Shared.Models.Modelos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,82 +17,140 @@ namespace Agendamentos.EndPoints
                 var groupBuilder = app.MapGroup("agendamentos")
                 .WithTags("Agendamentos");
 
-
-
-
-
                 groupBuilder.MapGet("", async ([FromServices] DAL<Agendamento> dal, [FromServices] DAL<Professores> professorDal, DAL<Aulas> aulasDal, DAL<Equipamentos> equipamentosDal) =>
                 {
                     var listaDeAgendamentos = dal.Listar();
-                    if (listaDeAgendamentos is null)
+                    if (listaDeAgendamentos is null || !listaDeAgendamentos.Any())
                     {
-                        return Results.NotFound();
+                        return Results.NotFound("Nenhum agendamento encontrado.");
                     }
+
                     var listaDeAgendamentosResponse = new List<AgendamentoResponse>();
                     foreach (var agendamento in listaDeAgendamentos)
                     {
                         var professor = professorDal.RecuperarPor(p => p.Id == agendamento.ProfessorId);
-                        var aula = aulasDal.RecuperarPor(a => a.Id == agendamento.AulaId);
                         var equipamento = equipamentosDal.RecuperarPor(e => e.Id == agendamento.EquipamentoId);
-                        if (professor != null && aula != null && equipamento != null)
+
+                        if (professor == null)
                         {
+                            return Results.NotFound($"Professor com ID {agendamento.ProfessorId} não encontrado.");
+                        }
+                        if (equipamento == null)
+                        {
+                            return Results.NotFound($"Equipamento com ID {agendamento.EquipamentoId} não encontrado.");
+                        }
+
+                        foreach (var aulaAgendada in agendamento.AgendamentoAulas)
+                        {
+                            var aula = aulasDal.RecuperarPor(a => a.Id == aulaAgendada.AulaId);
+                            if (aula == null)
+                            {
+                                return Results.NotFound($"Aula com ID {aulaAgendada.AulaId} não encontrada.");
+                            }
+
                             var agendamentoResponse = new AgendamentoResponse(agendamento.Id, agendamento.Data, aula.Aula, equipamento.Nome, professor.Nome);
                             listaDeAgendamentosResponse.Add(agendamentoResponse);
                         }
                     }
+
                     return Results.Ok(listaDeAgendamentosResponse);
                 }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
-
-
 
                 groupBuilder.MapGet("{professorId}", async ([FromServices] DAL<Agendamento> dal, [FromServices] DAL<Professores> professorDal, DAL<Aulas> aulasDal, DAL<Equipamentos> equipamentosDal, int professorId) =>
                 {
                     var agendamentosDoProfessor = dal.Listar(a => a.ProfessorId == professorId);
-                    if (!agendamentosDoProfessor.Any())
+                    if (agendamentosDoProfessor == null || !agendamentosDoProfessor.Any())
                     {
-                        return Results.NotFound();
+                        return Results.NotFound($"Nenhum agendamento encontrado para o professor com ID {professorId}.");
                     }
+
                     var listaDeAgendamentosResponse = new List<AgendamentoResponse>();
                     foreach (var agendamento in agendamentosDoProfessor)
                     {
                         var professor = professorDal.RecuperarPor(p => p.Id == agendamento.ProfessorId);
-                        var aula = aulasDal.RecuperarPor(a => a.Id == agendamento.AulaId);
                         var equipamento = equipamentosDal.RecuperarPor(e => e.Id == agendamento.EquipamentoId);
-                        if (professor != null && aula != null && equipamento != null)
+
+                        if (professor == null)
                         {
+                            return Results.NotFound($"Professor com ID {agendamento.ProfessorId} não encontrado.");
+                        }
+                        if (equipamento == null)
+                        {
+                            return Results.NotFound($"Equipamento com ID {agendamento.EquipamentoId} não encontrado.");
+                        }
+
+                        foreach (var aulaAgendada in agendamento.AgendamentoAulas)
+                        {
+                            var aula = aulasDal.RecuperarPor(a => a.Id == aulaAgendada.AulaId);
+                            if (aula == null)
+                            {
+                                return Results.NotFound($"Aula com ID {aulaAgendada.AulaId} não encontrada.");
+                            }
+
                             var agendamentoResponse = new AgendamentoResponse(agendamento.Id, agendamento.Data, aula.Aula, equipamento.Nome, professor.Nome);
                             listaDeAgendamentosResponse.Add(agendamentoResponse);
                         }
                     }
+
                     return Results.Ok(listaDeAgendamentosResponse);
                 });
+
+
 
 
 
 
                 groupBuilder.MapPost("", async ([FromServices] DAL<Agendamento> dal, [FromServices] DAL<Equipamentos> EquipamentosDal, [FromBody] AgendamentoRequest agendamentoRequest, [FromServices] PessoaComAcesso user) =>
                 {
-                    var agendamentosExistenteEquipamento = dal.Listar(a => a.EquipamentoId == agendamentoRequest.EquipamentoId && a.Data == agendamentoRequest.Data);
+                    if (agendamentoRequest == null)
+                    {
+                        return Results.BadRequest("O pedido de agendamento é nulo.");
+                    }
+
+                    if (agendamentoRequest.AulaIds == null || !agendamentoRequest.AulaIds.Any())
+                    {
+                        return Results.BadRequest("Nenhuma aula foi fornecida no pedido de agendamento.");
+                    }
+
                     var equipamento = await EquipamentosDal.RecuperarPorAsync(e => e.Id == agendamentoRequest.EquipamentoId);
 
-                    // Verificar se o professor já tem um agendamento para a mesma aula no mesmo dia
-                    var agendamentoExistenteProfessor = dal.Listar(a => a.ProfessorId == agendamentoRequest.ProfessorId && a.Data == agendamentoRequest.Data && a.AulaId == agendamentoRequest.AulaId);
-                    if (agendamentoExistenteProfessor.Any())
+                    if (equipamento == null)
                     {
-                        return Results.BadRequest("O professor já tem um agendamento para a mesma aula nesta data.");
+                        return Results.BadRequest("O equipamento não foi encontrado.");
                     }
 
-                    if (agendamentosExistenteEquipamento.Count() >= equipamento?.Quantidade)
+                    List<string> errors = new List<string>();
+
+                    foreach (var aulaId in agendamentoRequest.AulaIds)
                     {
-                        return Results.BadRequest("O equipamento já está totalmente agendado para esta data e horário.");
+                        // Verificar se o professor já tem um agendamento para a mesma aula no mesmo dia
+                        var agendamentoExistenteProfessor = dal.Listar(a => a.ProfessorId == agendamentoRequest.ProfessorId && a.Data == agendamentoRequest.Data && a.AgendamentoAulas.Any(aa => aa.AulaId == aulaId));
+                        if (agendamentoExistenteProfessor.Any())
+                        {
+                            errors.Add($"O professor já tem um agendamento para a aula {aulaId} nesta data.");
+                            continue;
+                        }
+
+                        try
+                        {
+                            var agendamento = new Agendamento { Data = agendamentoRequest.Data, EquipamentoId = agendamentoRequest.EquipamentoId, ProfessorId = agendamentoRequest.ProfessorId };
+                            agendamento.AgendamentoAulas.Add(new AgendamentoAula { AulaId = aulaId });
+                            dal.Adicionar(agendamento);
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.Add($"Erro ao criar agendamento para a aula {aulaId}: {ex.Message}");
+                        }
                     }
 
-                    var agendamento = new Agendamento { Data = agendamentoRequest.Data, AulaId = agendamentoRequest.AulaId, EquipamentoId = agendamentoRequest.EquipamentoId, ProfessorId = agendamentoRequest.ProfessorId };
-                    dal.Adicionar(agendamento);
-
+                    if (errors.Any())
+                    {
+                        return Results.BadRequest(string.Join(", ", errors));
+                    }
 
                     return Results.Created();
                 });
+
 
 
 
@@ -110,7 +169,6 @@ namespace Agendamentos.EndPoints
 
 
 
-
                 groupBuilder.MapPut("", ([FromServices] DAL<Agendamento> dal, [FromBody] AgendamentosRequestEdit agendamentoRequestEdit) => {
                     var agendamentoAAtualizar = dal.RecuperarPor(a => a.Id == agendamentoRequestEdit.Id);
                     if (agendamentoAAtualizar is null)
@@ -118,10 +176,16 @@ namespace Agendamentos.EndPoints
                         return Results.NotFound();
                     }
                     agendamentoAAtualizar.Data = agendamentoRequestEdit.Data;
-                    agendamentoAAtualizar.AulaId = agendamentoRequestEdit.AulaId;
                     agendamentoAAtualizar.EquipamentoId = agendamentoRequestEdit.EquipamentoId;
                     agendamentoAAtualizar.ProfessorId = agendamentoRequestEdit.ProfessorId;
-                    dal.Atualizar(agendamentoAAtualizar);
+
+                    // Atualizar cada agendamento com a nova lista de aulas
+                    foreach (var aulaId in agendamentoRequestEdit.AulaIds)
+                    {
+                        agendamentoAAtualizar.AgendamentoAulas.Add(new AgendamentoAula { AulaId = aulaId });
+                        dal.Atualizar(agendamentoAAtualizar);
+                    }
+
                     return Results.Ok();
                 });
             }

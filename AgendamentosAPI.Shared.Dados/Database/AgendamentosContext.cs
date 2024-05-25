@@ -1,5 +1,6 @@
 ﻿using Agendamentos.Shared.Dados.Modelos;
 using Agendamentos.Shared.Modelos.Modelos;
+using AgendamentosAPI.Shared.Models.Modelos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -12,8 +13,10 @@ namespace Agendamentos.Shared.Dados.Database
         public DbSet<Equipamentos> Equipamentos { get; set; }
         public DbSet<Agendamento> Agendamentos { get; set; }
         public DbSet<Aulas> Aulas { get; set; }
+        public DbSet<AgendamentoAula> AgendamentoAulas { get; set; }
 
-        private string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Agendamentos;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
+        private string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Agendamentos;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;MultiSubnetFailover=False;MultipleActiveResultSets=True";
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -67,10 +70,21 @@ namespace Agendamentos.Shared.Dados.Database
                 .WithMany(e => e.Agendamentos) // Define a relação com a coleção de Agendamentos
                 .HasForeignKey(a => a.EquipamentoId); // Define a propriedade EquipamentoId como chave estrangeira
 
-            modelBuilder.Entity<Agendamento>()
-                .HasOne(a => a.Aula) // Define a relação com a entidade Aulas
-                .WithMany(a => a.Agendamentos) // Define a relação com a coleção de Agendamentos
-                .HasForeignKey(a => a.AulaId); // Define a propriedade AulaId como chave estrangeira
+            modelBuilder.Entity<AgendamentoAula>()
+            .HasKey(aa => new { aa.AgendamentoId, aa.AulaId }); // Define a chave primária
+
+            modelBuilder.Entity<AgendamentoAula>()
+                .HasOne(aa => aa.Agendamento)
+                .WithMany(a => a.AgendamentoAulas)
+                .HasForeignKey(aa => aa.AgendamentoId);
+
+            modelBuilder.Entity<AgendamentoAula>()
+                .HasOne(aa => aa.Aula)
+                .WithMany(a => a.AgendamentoAulas)
+                .HasForeignKey(aa => aa.AulaId);
+
+
+
         }
 
     }

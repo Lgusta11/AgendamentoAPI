@@ -20,7 +20,7 @@ builder.Services.AddMudServices();
 builder.Services.AddScoped<CookieHandler>();
 builder.Services.AddScoped<AdminAPI>();
 builder.Services.AddScoped<LoginAPI>();
-builder.Services.AddScoped<AgendamentosAPI>();
+builder.Services.AddScoped<AgendamentosWEB.Services.AgendamentosAPI>();
 builder.Services.AddScoped<CadastroAPI>();
 builder.Services.AddScoped<EquipamentosAPI>();
 builder.Services.AddScoped<ProfessoresAPI>();

@@ -26,14 +26,20 @@ namespace Agendamentos.Shared.Modelos.Modelos
         public string UserId { get; set; }
         public void AdicionarAgendamento(Agendamento agendamento)
         {
-            
-            if (Agendamentos.Any(a => a.Data.Date == agendamento.Data.Date && a.AulaId == agendamento.AulaId && a.EquipamentoId == agendamento.EquipamentoId && a.ProfessorId == this.Id))
+            foreach (var agendamentoAula in agendamento.AgendamentoAulas)
             {
-                throw new InvalidOperationException("Você já criou um agendamento para este dia, aula e equipamento.");
+                if (Agendamentos.Any(a => a.Data.Date == agendamento.Data.Date &&
+                    a.AgendamentoAulas.Any(aa => aa.AulaId == agendamentoAula.AulaId) &&
+                    a.EquipamentoId == agendamento.EquipamentoId &&
+                    a.ProfessorId == this.Id))
+                {
+                    throw new InvalidOperationException("Você já criou um agendamento para este dia, aula e equipamento.");
+                }
             }
 
             Agendamentos.Add(agendamento);
         }
+
 
         public override string ToString()
         {

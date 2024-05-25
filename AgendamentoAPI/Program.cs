@@ -4,6 +4,7 @@ using Agendamentos.EndPoints;
 using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Dados.Modelos;
 using Agendamentos.Shared.Modelos.Modelos;
+using AgendamentosAPI.Shared.Models.Modelos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -29,6 +30,7 @@ builder.Services.AddScoped<DAL<Equipamentos>>();
 builder.Services.AddScoped<DAL<Professores>>();
 builder.Services.AddScoped<DAL<Agendamento>>();
 builder.Services.AddScoped<DAL<Admin>>();
+builder.Services.AddScoped<DAL<AgendamentoAula>>();
 
 
 // Configuração do JWT Authentication
