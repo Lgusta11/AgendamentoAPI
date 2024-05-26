@@ -120,14 +120,15 @@ namespace Agendamentos.EndPoints
                     }
 
                     List<string> errors = new List<string>();
+                    bool agendamentoRealizado = false;
 
                     foreach (var aulaId in agendamentoRequest.AulaIds)
                     {
-                        // Verificar se o professor já tem um agendamento para a mesma aula no mesmo dia
-                        var agendamentoExistenteProfessor = dal.Listar(a => a.ProfessorId == agendamentoRequest.ProfessorId && a.Data == agendamentoRequest.Data && a.AgendamentoAulas.Any(aa => aa.AulaId == aulaId));
+                        // Verificar se o professor já tem um agendamento para a mesma aula no mesmo dia com o mesmo equipamento
+                        var agendamentoExistenteProfessor = dal.Listar(a => a.ProfessorId == agendamentoRequest.ProfessorId && a.Data == agendamentoRequest.Data && a.EquipamentoId == agendamentoRequest.EquipamentoId && a.AgendamentoAulas.Any(aa => aa.AulaId == aulaId));
                         if (agendamentoExistenteProfessor.Any())
                         {
-                            errors.Add($"O professor já tem um agendamento para a aula {aulaId} nesta data.");
+                            errors.Add($"Não foi possível fazer o agendamento da aula {aulaId} neste equipamento e data.");
                             continue;
                         }
 
@@ -136,6 +137,7 @@ namespace Agendamentos.EndPoints
                             var agendamento = new Agendamento { Data = agendamentoRequest.Data, EquipamentoId = agendamentoRequest.EquipamentoId, ProfessorId = agendamentoRequest.ProfessorId };
                             agendamento.AgendamentoAulas.Add(new AgendamentoAula { AulaId = aulaId });
                             dal.Adicionar(agendamento);
+                            agendamentoRealizado = true;
                         }
                         catch (Exception ex)
                         {
@@ -143,13 +145,18 @@ namespace Agendamentos.EndPoints
                         }
                     }
 
-                    if (errors.Any())
+                    if (errors.Any() && agendamentoRealizado)
                     {
-                        return Results.BadRequest(string.Join(", ", errors));
+                        return Results.BadRequest("Foi possível fazer o agendamento de algumas aulas, mas ocorreram os seguintes erros: " + string.Join(", ", errors));
+                    }
+                    else if (errors.Any())
+                    {
+                        return Results.BadRequest("Não foi possível fazer o agendamento de nenhuma aula. Os seguintes erros ocorreram: " + string.Join(", ", errors));
                     }
 
                     return Results.Created();
                 });
+
 
 
 
