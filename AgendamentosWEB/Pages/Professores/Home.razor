@@ -35,7 +35,6 @@ else
     {
         <MudStack Class="mt-4 mb-4" Row="true" Justify="Justify.SpaceBetween">
             <MudText Class="mb-4" Typo="Typo.h5">Seus agendamentos de hoje!</MudText>
-            <MudPagination Count="@totalPaginas" SelectedChanged="PaginaMudou"></MudPagination>
         </MudStack>
         <MudGrid>
             @foreach (var agendamento in agendamentosHoje)
@@ -55,6 +54,11 @@ else
                 </MudItem>
             }
         </MudGrid>
+        <div style="height: 200px;">
+            <MudStack Class="mt-4 mb-4" Row="true" Justify="Justify.Center">
+                <MudPagination Count="@totalPaginas" SelectedChanged="PaginaMudou"></MudPagination>
+            </MudStack>
+        </div>
     }
 }
 

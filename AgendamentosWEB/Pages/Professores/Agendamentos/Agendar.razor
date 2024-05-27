@@ -40,7 +40,9 @@
                                     }
                                 </MudSelect>
 
-                                <MudDatePicker Label="Escolha uma data" Required="true" @bind-Date="@agendamentoModel.DataSelecionada" />
+                              
+                            <MudDatePicker Label="Escolha uma data" Required="true" @bind-Date="@agendamentoModel.DataSelecionada" />
+
                             </MudCardContent>
                             <MudCardActions>
                                 <div class="d-flex align-center justify-space-between mt-4">
@@ -122,6 +124,8 @@
             Snackbar.Add($"Erro ao carregar dados: {ex.Message}", Severity.Error);
         }
     }
+
+
 
     private void UpdateSelectedAulas(IEnumerable<AulasResponse> selected)
     {
