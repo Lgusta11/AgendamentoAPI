@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using Microsoft.AspNetCore.Components.Authorization;
+using Radzen;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -15,6 +16,7 @@ builder.Services.AddScoped(sp => (LoginAPI)sp.GetRequiredService<AuthenticationS
 
 
 builder.Services.AddMudServices();
+builder.Services.AddRadzenComponents();
 
 // Adicione os serviços necessários
 builder.Services.AddScoped<CookieHandler>();
@@ -31,6 +33,11 @@ builder.Services.AddHttpClient("API", client => {
     client.BaseAddress = new Uri(builder.Configuration["APIServer:Url"]!);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 }).AddHttpMessageHandler<CookieHandler>();
+
+builder.Services.AddHttpClient("HolidayAPI", client => {
+    client.BaseAddress = new Uri(builder.Configuration["HolidayAPI:Url"]!);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
 
 
 await builder.Build().RunAsync();

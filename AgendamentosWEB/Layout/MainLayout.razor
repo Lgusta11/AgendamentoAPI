@@ -17,10 +17,10 @@
         <AuthorizeView>
             <Authorized>
              
-                <MudButton Class="ml-4" OnClick="Logout" Variant="Variant.Outlined" Style="color: white;">Logout</MudButton>
+                <MudButton Class="ml-4" OnClick="Logout" Variant="@MudBlazor.Variant.Outlined" Style="color: white;">Logout</MudButton>
             </Authorized>
             <NotAuthorized>
-                <MudButton Class="ml-4" Href="auth/login" Variant="Variant.Outlined" Style="color: white;" >Login</MudButton>
+                <MudButton Class="ml-4" Href="auth/login" Variant="@MudBlazor.Variant.Outlined" Style="color: white;" >Login</MudButton>
             </NotAuthorized>
         </AuthorizeView>
     </MudAppBar>

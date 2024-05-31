@@ -21,7 +21,7 @@
                                           @bind-Value="model.Quantidade" For="@(() => model.Quantidade)" />
                         </MudCardContent>
                         <MudCardActions>
-                            <MudButton Variant="Variant.Filled"
+                            <MudButton Variant="@MudBlazor.Variant.Filled"
                                        Color="Color.Success"
                                        Disabled="@(!formContext.Validate())"
                                        Class="ml-auto"

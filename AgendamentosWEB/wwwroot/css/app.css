@@ -7,8 +7,12 @@ h1:focus {
 }
 
 a, .btn-link {
-    color: #0071c1;
+    color: #fff !important;
 }
+
+a, .btn-link:hover {
+    color: #fff !important;
+} 
 
 .btn-primary {
     color: #1b6ec2;
@@ -30,7 +34,7 @@ a, .btn-link {
 }
 
 .invalid {
-    outline: 1px solid red;
+    outline: 1px solid green;
 }
 
 .validation-message {
@@ -182,6 +186,64 @@ input[type=text] {
     margin: 0;
     flex-wrap: nowrap;
 }
+
+/* Estilos para a seleção e hover de datas */
+.rz-datepicker-calendar td .rz-state-active.rz-state-focused,
+.rz-datepicker-calendar td .rz-state-active:hover,
+.rz-datepicker-calendar td .rz-state-active.rz-datepicker-today.rz-state-focused,
+.rz-datepicker-calendar td .rz-state-active.rz-datepicker-today:hover {
+    color: var(--rz-datepicker-calendar-selected-hover-color) !important;
+    background-color: #198754 !important;
+}
+
+.rz-datepicker-calendar td .rz-state-active,
+.rz-datepicker-calendar td .rz-state-active.rz-datepicker-today {
+    color: var(--rz-datepicker-calendar-selected-color) !important;
+    background-color: #198754 !important;
+    padding: var(--rz-datepicker-calendar-padding) !important;
+    box-shadow: none !important;
+}
+
+/* Estilos customizados para o DatePicker */
+.custom-datepicker .rz-datepicker {
+    border: 2px solid green !important; /* Cor da borda verde */
+    padding: 10px !important; /* Reduzir o tamanho */
+    max-width: 100% !important; /* Tornar responsivo */
+}
+
+    .custom-datepicker .rz-datepicker .rz-state-active .rz-calendar-cell {
+        background-color: green !important; /* Cor da bolinha quando selecionada */
+        color: white !important; /* Cor do texto na bolinha */
+    }
+
+    .custom-datepicker .rz-datepicker .rz-calendar-cell {
+        width: 30px !important; /* Tamanho da célula do calendário */
+        height: 30px !important; /* Altura da célula do calendário */
+        line-height: 30px !important; /* Centralizar texto verticalmente */
+        border-radius: 50% !important; /* Tornar as células circulares */
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+
+        .custom-datepicker .rz-datepicker .rz-calendar-cell:hover {
+            background-color: lightgreen !important; /* Cor de fundo ao passar o mouse */
+        }
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .custom-datepicker .rz-datepicker {
+        padding: 5px !important; /* Reduzir o padding em telas menores */
+    }
+
+        .custom-datepicker .rz-datepicker .rz-calendar-cell {
+            width: 25px !important; /* Reduzir o tamanho da célula do calendário */
+            height: 25px !important; /* Reduzir a altura da célula do calendário */
+            line-height: 25px !important; /* Ajustar a linha central */
+        }
+}
+
+
 
 @media (max-width: 600px) {
     .mud-pagination {

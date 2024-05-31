@@ -13,7 +13,7 @@
             <MudContainer Class="d-flex flex-column align-items-center justify-content-center text-center p-2" style="max-width: 90%;">
                 <center><MudIcon Icon="@Icons.Material.Filled.SentimentVeryDissatisfied" Color="Color.Primary" Size="Size.Large" Class="custom-icon mb-3" /></center>
                 <MudText Typo="Typo.h5" Class="my-4 mx-2">Você não possui agendamentos!</MudText>
-                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="IrParaAgendar">Agendar agora</MudButton>
+                <MudButton Variant="@MudBlazor.Variant.Text" Color="Color.Primary" OnClick="IrParaAgendar">Agendar agora</MudButton>
             </MudContainer>
         </div>
     </center>
@@ -44,7 +44,7 @@ else
                                 Cancelando esse agendamento,<b><i>não </i></b>será possível refazer a ação!
                             </MessageContent>
                             <YesButton>
-                                <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever">Excluir!</MudButton>
+                                <MudButton Variant="@MudBlazor.Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever">Excluir!</MudButton>
                             </YesButton>
                         </MudMessageBox>
                     </MudCardContent>

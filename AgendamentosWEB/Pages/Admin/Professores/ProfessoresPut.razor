@@ -15,11 +15,11 @@
                 <MudItem xs="12" sm="7">
                     <MudCard>
                         <MudCardContent>
-                            <MudTextField @bind-Value="model.Nome" Label="Nome" Variant="Variant.Text" FullWidth InputType="InputType.Text" />
-                            <MudTextField @bind-Value="model.Email" Label="Email" Variant="Variant.Text" FullWidth InputType="InputType.Email" />
+                            <MudTextField @bind-Value="model.Nome" Label="Nome" Variant="@MudBlazor.Variant.Text" FullWidth InputType="InputType.Text" />
+                            <MudTextField @bind-Value="model.Email" Label="Email" Variant="@MudBlazor.Variant.Text" FullWidth InputType="InputType.Email" />
                         </MudCardContent>
                         <MudCardActions>
-                            <MudButton Variant="Variant.Filled"
+                            <MudButton Variant="@MudBlazor.Variant.Filled"
                                        Color="Color.Success"
                                        Disabled="@(!formContext.Validate())"
                                        Class="ml-auto"

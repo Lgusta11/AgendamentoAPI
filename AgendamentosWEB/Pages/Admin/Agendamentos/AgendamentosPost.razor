@@ -8,6 +8,9 @@
 @inject NavigationManager Navigation
 @inject LoginAPI loginAPI
 @inject ISnackbar Snackbar
+@using System.Net.Http
+@using System.Net.Http.Json
+@inject HttpClient Http
 
 <AuthorizeView>
     <Authorized Context="authContext">
@@ -19,10 +22,11 @@
         }
         else
         {
+            <RadzenHtmlEditorAlignCenter>
             <EditForm EditContext="@editContext" OnValidSubmit="HandleFormSubmit">
                 <DataAnnotationsValidator />
                 <MudGrid>
-                    <MudItem xs="12" sm="7">
+                    <MudItem xs="12" sm="7" >
                         <MudCard>
                             <MudCardContent>
 
@@ -46,11 +50,13 @@
                                     }
                                 </MudSelect>
 
-                                <MudDatePicker Label="Escolha uma data" Required="true" @bind-Date="@agendamentoModel.DataSelecionada" />
+                                <div class="rz-p-6 custom-datepicker">
+                                    <RadzenDatePicker @bind-Value=@agendamentoModel.DataSelecionada DateFormat="MM/dd/yyyy" DateRender="DateRender" Inline="true" />
+                                </div>
                             </MudCardContent>
                             <MudCardActions>
                                 <div class="d-flex align-center justify-space-between mt-4">
-                                    <MudButton Variant="Variant.Filled"
+                                    <MudButton Variant="@MudBlazor.Variant.Filled"
                                                Color="Color.Primary"
                                                Disabled="@(!editContext.Validate())"
                                                Class="ml-auto"
@@ -84,7 +90,8 @@
                         </MudPaper>
                     </MudItem>
                 </MudGrid>
-            </EditForm>
+                </EditForm>
+            </RadzenHtmlEditorAlignCenter>
         }
     </Authorized>
     <NotAuthorized>
@@ -104,6 +111,8 @@
     string? apiError;
     string? errorMessage;
     private ICollection<AulasResponse> selectedAulas;
+    List<PublicHoliday> feriados = new List<PublicHoliday>();
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -113,6 +122,8 @@
             professores = await professoresAPI.GetProfessoresAsync() ?? new List<ProfessoresResponse>();
             aulas = await aulasAPI.GetAulasAsync() ?? new List<AulasResponse>();
             equipamentos = await equipamentosAPI.GetEquipamentosAsync() ?? new List<EquipamentoResponse>();
+            var feriadosApiUrl = "https://date.nager.at/api/v3/PublicHolidays/2024/BR";
+            feriados = await Http.GetFromJsonAsync<List<PublicHoliday>>(feriadosApiUrl);
         }
         catch (Exception ex)
         {
@@ -123,6 +134,29 @@
     {
         selectedAulas = selected.ToList();
         agendamentoModel.AulasSelecionadas = selectedAulas.Select(a => a.Id).ToList();
+    }
+    void DateRender(DateRenderEventArgs args)
+    {
+        DateTime today = DateTime.Today;
+        DateTime startOfWeek = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
+        DateTime endOfWeek = startOfWeek.AddDays(6);
+
+        // Verifica se a data é um sábado ou domingo
+        bool isWeekend = args.Date.DayOfWeek == DayOfWeek.Saturday || args.Date.DayOfWeek == DayOfWeek.Sunday;
+
+        // Verifica se a data é um feriado
+        bool isHoliday = feriados.Any(f => f.Date == args.Date);
+
+        // Verifica se a data já passou
+        bool isPast = args.Date < today;
+
+        // Verifica se a data está fora da semana atual
+        bool isOutOfCurrentWeek = args.Date < startOfWeek || args.Date > endOfWeek;
+
+        // Desabilita a data se for final de semana, feriado, no passado ou fora da semana atual
+        args.Disabled = isWeekend || isHoliday || isPast || isOutOfCurrentWeek;
+
+
     }
 
     private async Task HandleFormSubmit()
@@ -193,6 +227,15 @@
         [Required(ErrorMessage = "O professor é obrigatório.")]
         public ProfessoresResponse? ProfessorSelecionado { get; set; }
     }
-
+    public class PublicHoliday
+    {
+        public DateTime Date { get; set; }
+        public string LocalName { get; set; }
+        public string Name { get; set; }
+        public string CountryCode { get; set; }
+        public bool Fixed { get; set; }
+        public bool Global { get; set; }
+        public string Type { get; set; }
+    }
 }
 
