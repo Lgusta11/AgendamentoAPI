@@ -1,4 +1,4 @@
-﻿@page "/agendar"
+@page "/agendar"
 @using AgendamentosWEB.Requests
 @using System.ComponentModel.DataAnnotations
 @inject AgendamentosAPI agendamentosAPI
@@ -113,7 +113,7 @@
         try
         {
             var userInfo = await loginAPI.GetUserInfoAsync();
-            if (userInfo != null)
+            if (userInfo)
             {
                 var userName = userInfo.UserName;
                 var professorId = await professoresAPI.GetProfessorIdByUserNameAsync(userName);
