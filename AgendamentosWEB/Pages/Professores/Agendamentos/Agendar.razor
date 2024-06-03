@@ -62,7 +62,7 @@
                     </MudItem>
                     <MudItem xs="12" sm="5">
                         <MudPaper Class="pa-4 mud-height-full">
-                            <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                            <MudText Typo="Typo.subtitle2">Sumário de validação</MudText>
                             @if (!string.IsNullOrEmpty(apiError) || !string.IsNullOrEmpty(errorMessage))
                             {
                                 <MudText Color="Color.Error">
@@ -71,7 +71,7 @@
                             }
                             else if (success)
                             {
-                                <MudText Color="Color.Success">Success</MudText>
+                                <MudText Color="Color.Success">Agendamento realizado com sucesso!</MudText>
                             }
                             else
                             {
@@ -92,8 +92,6 @@
         }
     </NotAuthorized>
 </AuthorizeView>
-
-
 
 @code {
     private ICollection<AulasResponse> aulas;
@@ -137,7 +135,7 @@
     {
         DateTime today = DateTime.Today;
         DateTime startOfWeek = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
-        DateTime endOfWeek = startOfWeek.AddDays(6);
+        DateTime endOfNextWeek = startOfWeek.AddDays(13);  // End of next week
 
         // Verifica se a data é um sábado ou domingo
         bool isWeekend = args.Date.DayOfWeek == DayOfWeek.Saturday || args.Date.DayOfWeek == DayOfWeek.Sunday;
@@ -148,15 +146,14 @@
         // Verifica se a data já passou
         bool isPast = args.Date < today;
 
-        // Verifica se a data está fora da semana atual
-        bool isOutOfCurrentWeek = args.Date < startOfWeek || args.Date > endOfWeek;
+        // Verifica se a data está fora do intervalo permitido (duas semanas)
+        bool isOutOfTwoWeeks = args.Date > endOfNextWeek;
 
-        // Desabilita a data se for final de semana, feriado, no passado ou fora da semana atual
-        args.Disabled = isWeekend || isHoliday || isPast || isOutOfCurrentWeek;
+        // Desabilita a data se for final de semana, feriado, no passado ou fora do intervalo de duas semanas
+        args.Disabled = isWeekend || isHoliday || isPast || isOutOfTwoWeeks;
 
-        
+
     }
-
 
     private void UpdateSelectedAulas(IEnumerable<AulasResponse> selected)
     {
