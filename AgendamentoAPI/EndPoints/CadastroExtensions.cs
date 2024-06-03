@@ -22,20 +22,22 @@ namespace AgendamentoAPI.EndPoints
                 .WithTags("Autenticação");
 
             //ADMIN
-            groupBuilder.MapPost("Cadastro/admin", async ([FromServices] DAL<Admin> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<IdentityRole> roleManager, [FromBody] AdminRequest adminRequest) =>
+            groupBuilder.MapPost("Cadastro/admin", async ([FromServices] DAL<Admin> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] AdminRequest adminRequest) =>
             {
                 // Verifique se o papel de administrador existe, se não, crie um
                 if (!await roleManager.RoleExistsAsync("Admin"))
                 {
-                    var adminRole = new IdentityRole { Name = "Admin" };
+                    var adminRole = new Admin { Name = "Admin" };
                     await roleManager.CreateAsync(adminRole);
                 }
 
+                // Valide a senha
                 if (adminRequest.Senha != adminRequest.ConfirmacaoSenha)
                 {
                     return Results.BadRequest(new { message = "A senha e a confirmação de senha não correspondem." });
                 }
 
+                // Crie o usuário
                 var user = new PessoaComAcesso { UserName = adminRequest.Nome, Email = adminRequest.Email };
                 var result = await userManager.CreateAsync(user, adminRequest.Senha);
 
@@ -44,6 +46,7 @@ namespace AgendamentoAPI.EndPoints
                     return Results.BadRequest(result.Errors.Select(x => x.Description));
                 }
 
+                // Atribua o usuário ao papel de administrador
                 await userManager.AddToRoleAsync(user, "Admin");
 
                 // Crie uma instância de Admin sem a propriedade Senha
@@ -52,6 +55,7 @@ namespace AgendamentoAPI.EndPoints
 
                 return Results.Json(new { message = "Administrador registrado com sucesso." });
             });
+
 
             //PROFESSOR
             groupBuilder.MapPost("Cadastro/Professor", async ([FromServices] IHostEnvironment env, [FromServices] DAL<Professores> dal, [FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] ProfessoresRequest professoresRequest) =>

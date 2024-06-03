@@ -22,14 +22,12 @@
         }
         else
         {
-            <RadzenHtmlEditorAlignCenter>
             <EditForm EditContext="@editContext" OnValidSubmit="HandleFormSubmit">
                 <DataAnnotationsValidator />
                 <MudGrid>
-                    <MudItem xs="12" sm="7" >
+                    <MudItem xs="12" sm="7">
                         <MudCard>
                             <MudCardContent>
-
                                 <MudSelect T="ProfessoresResponse" Label="Escolha o Professor" Required="true" @bind-Value="agendamentoModel.ProfessorSelecionado">
                                     @foreach (var professor in professores)
                                     {
@@ -42,14 +40,12 @@
                                         <MudSelectItem Value="aula">@aula.Aula</MudSelectItem>
                                     }
                                 </MudSelect>
-
                                 <MudSelect T="EquipamentoResponse" Label="Escolha o equipamento" Required="true" @bind-Value="agendamentoModel.EquipamentoSelecionado">
                                     @foreach (var equipamento in equipamentos)
                                     {
                                         <MudSelectItem Value="equipamento">@equipamento.Nome</MudSelectItem>
                                     }
                                 </MudSelect>
-
                                 <div class="rz-p-6 custom-datepicker">
                                     <RadzenDatePicker @bind-Value=@agendamentoModel.DataSelecionada DateFormat="MM/dd/yyyy" DateRender="DateRender" Inline="true" />
                                 </div>
@@ -86,12 +82,10 @@
                                     <ValidationSummary />
                                 </MudText>
                             }
-
                         </MudPaper>
                     </MudItem>
                 </MudGrid>
-                </EditForm>
-            </RadzenHtmlEditorAlignCenter>
+            </EditForm>
         }
     </Authorized>
     <NotAuthorized>
@@ -113,7 +107,6 @@
     private ICollection<AulasResponse> selectedAulas;
     List<PublicHoliday> feriados = new List<PublicHoliday>();
 
-
     protected override async Task OnInitializedAsync()
     {
         editContext = new EditContext(agendamentoModel);
@@ -130,42 +123,32 @@
             Snackbar.Add($"Erro ao carregar dados: {ex.Message}", Severity.Error);
         }
     }
+
     private void UpdateSelectedAulas(IEnumerable<AulasResponse> selected)
     {
         selectedAulas = selected.ToList();
         agendamentoModel.AulasSelecionadas = selectedAulas.Select(a => a.Id).ToList();
     }
+
     void DateRender(DateRenderEventArgs args)
     {
         DateTime today = DateTime.Today;
         DateTime startOfWeek = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
         DateTime endOfWeek = startOfWeek.AddDays(6);
 
-        // Verifica se a data é um sábado ou domingo
         bool isWeekend = args.Date.DayOfWeek == DayOfWeek.Saturday || args.Date.DayOfWeek == DayOfWeek.Sunday;
-
-        // Verifica se a data é um feriado
         bool isHoliday = feriados.Any(f => f.Date == args.Date);
-
-        // Verifica se a data já passou
         bool isPast = args.Date < today;
-
-        // Verifica se a data está fora da semana atual
         bool isOutOfCurrentWeek = args.Date < startOfWeek || args.Date > endOfWeek;
 
-        // Desabilita a data se for final de semana, feriado, no passado ou fora da semana atual
         args.Disabled = isWeekend || isHoliday || isPast || isOutOfCurrentWeek;
-
-
     }
 
     private async Task HandleFormSubmit()
     {
-       
         try
         {
             var agendamento = new AgendamentoRequest(agendamentoModel.DataSelecionada.Value, agendamentoModel.AulasSelecionadas, agendamentoModel.EquipamentoSelecionado.Id, agendamentoModel.ProfessorSelecionado.Id);
-
             var result = await agendamentosAPI.AddAgendamentoAsync(agendamento);
 
             if (result != null)
@@ -200,8 +183,6 @@
         }
     }
 
-
-
     private async Task CadastrarAgendamento()
     {
         if (!editContext.Validate())
@@ -227,6 +208,7 @@
         [Required(ErrorMessage = "O professor é obrigatório.")]
         public ProfessoresResponse? ProfessorSelecionado { get; set; }
     }
+
     public class PublicHoliday
     {
         public DateTime Date { get; set; }
@@ -238,4 +220,3 @@
         public string Type { get; set; }
     }
 }
-
