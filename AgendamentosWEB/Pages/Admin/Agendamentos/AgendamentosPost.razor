@@ -134,14 +134,24 @@
     {
         DateTime today = DateTime.Today;
         DateTime startOfWeek = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
-        DateTime endOfWeek = startOfWeek.AddDays(6);
+        DateTime endOfNextWeek = startOfWeek.AddDays(13);  // End of next week
 
+        // Verifica se a data é um sábado ou domingo
         bool isWeekend = args.Date.DayOfWeek == DayOfWeek.Saturday || args.Date.DayOfWeek == DayOfWeek.Sunday;
-        bool isHoliday = feriados.Any(f => f.Date == args.Date);
-        bool isPast = args.Date < today;
-        bool isOutOfCurrentWeek = args.Date < startOfWeek || args.Date > endOfWeek;
 
-        args.Disabled = isWeekend || isHoliday || isPast || isOutOfCurrentWeek;
+        // Verifica se a data é um feriado
+        bool isHoliday = feriados.Any(f => f.Date == args.Date);
+
+        // Verifica se a data já passou
+        bool isPast = args.Date < today;
+
+        // Verifica se a data está fora do intervalo permitido (duas semanas)
+        bool isOutOfTwoWeeks = args.Date > endOfNextWeek;
+
+        // Desabilita a data se for final de semana, feriado, no passado ou fora do intervalo de duas semanas
+        args.Disabled = isWeekend || isHoliday || isPast || isOutOfTwoWeeks;
+
+
     }
 
     private async Task HandleFormSubmit()

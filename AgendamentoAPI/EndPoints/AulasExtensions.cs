@@ -45,9 +45,9 @@ namespace Agendamentos.EndPoints
                 }
 
                 var totalAulas = dal.Listar().Count();
-                if (totalAulas >= 9)
+                if (totalAulas >= 10)
                 {
-                    return Results.BadRequest("Não é possível criar mais de 9 aulas.");
+                    return Results.BadRequest("Não é possível criar mais de 10 aulas.");
                 }
 
                 var aula = new Aulas(aulasRequest.Aula) { Duracao = TimeSpan.FromMinutes(50) };

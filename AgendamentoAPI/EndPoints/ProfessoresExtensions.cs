@@ -1,5 +1,4 @@
-﻿using AgendamentoAPI.Email;
-using Agendamentos.Requests;
+﻿using Agendamentos.Requests;
 using Agendamentos.Response;
 using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Dados.Modelos;
