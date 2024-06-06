@@ -8,14 +8,17 @@ using AgendamentosAPI.Shared.Models.Modelos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurações do DbContext, Identity, etc.
-builder.Services.AddDbContext<AgendamentosContext>();
+// Configure the DbContext with the connection string from appsettings.json
+builder.Services.AddDbContext<AgendamentosContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddScoped<PessoaComAcesso>();
 builder.Services.AddIdentity<PessoaComAcesso, Admin>()
     .AddEntityFrameworkStores<AgendamentosContext>()
@@ -25,13 +28,7 @@ builder.Services.AddIdentity<PessoaComAcesso, Admin>()
 builder.Services.AddHostedService<CleanupService>();
 
 builder.Services.AddLogging();
-builder.Services.AddScoped<DAL<Aulas>>();
-builder.Services.AddScoped<DAL<Equipamentos>>();
-builder.Services.AddScoped<DAL<Professores>>();
-builder.Services.AddScoped<DAL<Agendamento>>();
-builder.Services.AddScoped<DAL<Admin>>();
-builder.Services.AddScoped<DAL<AgendamentoAula>>();
-
+builder.Services.AddScoped(typeof(DAL<>));  // Adiciona a DAL como serviço genérico
 
 // Configuração do JWT Authentication
 var issuer = builder.Configuration["Jwt:Issuer"];
@@ -71,7 +68,6 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireLowercase = true;
 });
 
-
 // Configuração do Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -86,17 +82,20 @@ builder.Services.AddAuthorization();
 builder.Services.AddCors(
     options => options.AddPolicy(
         "wasm",
-        policy => policy.WithOrigins([builder.Configuration["BackendUrl"] ?? "https://localhost:7054",
-            builder.Configuration["FrontendUrl"] ?? "https://localhost:7056"])
+        policy => policy.WithOrigins(builder.Configuration["BackendUrl"] ?? "https://localhost:7054",
+            builder.Configuration["FrontendUrl"] ?? "https://localhost:7056")
             .AllowAnyMethod()
             .SetIsOriginAllowed(pol => true)
             .AllowAnyHeader()
             .AllowCredentials()));
 
-
 var app = builder.Build();
 
 app.UseCors("wasm");
+
+// Configuração de Middleware
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Obtenha uma instância do RoleManager
 using var serviceScope = app.Services.CreateScope();
@@ -109,8 +108,6 @@ if (!roleManager.RoleExistsAsync("Professores").Result)
     var roleResult = roleManager.CreateAsync(new Admin { Name = "Professores" }).Result;
 }
 
-
-
 // Adição dos Endpoints
 app.AddEndPointsProfessores();
 app.AddEndPointsAulas();
@@ -119,9 +116,6 @@ app.AddEndPointsAgendamentos();
 app.AddEndPointsAdmin();
 app.AddEndPointsCadastro();
 app.AddEndPoinsLogin();
-
-
-
 
 // Endpoint de Logout
 app.MapPost("auth/logout", async ([FromServices] SignInManager<PessoaComAcesso> signInManager) =>

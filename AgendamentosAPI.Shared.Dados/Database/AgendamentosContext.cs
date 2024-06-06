@@ -4,6 +4,7 @@ using AgendamentosAPI.Shared.Models.Modelos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace Agendamentos.Shared.Dados.Database
 {
@@ -15,63 +16,68 @@ namespace Agendamentos.Shared.Dados.Database
         public DbSet<Aulas> Aulas { get; set; }
         public DbSet<AgendamentoAula> AgendamentoAulas { get; set; }
 
-        private string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Agendamentos;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;MultiSubnetFailover=False;MultipleActiveResultSets=True";
+        private readonly IConfiguration _configuration;
 
+        public AgendamentosContext(DbContextOptions<AgendamentosContext> options, IConfiguration configuration)
+            : base(options)
+        {
+            _configuration = configuration;
+        }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder
-                .UseSqlServer(connectionString)
-                .UseLazyLoadingProxies();
+            if (!optionsBuilder.IsConfigured)
+            {
+                string connectionString = _configuration.GetConnectionString("DefaultConnection");
+
+                optionsBuilder
+                    .UseNpgsql(connectionString)
+                    .UseLazyLoadingProxies()
+                    .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information);
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Admin>()
-            .HasIndex(a => a.Email)
-            .IsUnique();
-            // Configuração para a entidade IdentityUserRole<int>
+                .HasIndex(a => a.Email)
+                .IsUnique();
+
             modelBuilder.Entity<IdentityUserRole<int>>()
                 .HasKey(ur => new { ur.UserId, ur.RoleId });
-        
 
-        // Configuração para a entidade IdentityUserLogin<int>
-        modelBuilder.Entity<IdentityUserLogin<int>>()
+            modelBuilder.Entity<IdentityUserLogin<int>>()
                 .HasKey(l => new { l.LoginProvider, l.ProviderKey });
 
-            // Configuração para a entidade IdentityUserToken<int>
             modelBuilder.Entity<IdentityUserToken<int>>()
                 .HasKey(ut => new { ut.UserId, ut.LoginProvider, ut.Name });
 
-            // Configuração para a entidade Professores
             modelBuilder.Entity<Professores>()
-                .HasKey(p => p.Id); // Define a propriedade Id como chave primária
+                .HasKey(p => p.Id);
 
-            // Configuração para a entidade Equipamentos
             modelBuilder.Entity<Equipamentos>()
-                .HasKey(e => e.Id); // Define a propriedade Id como chave primária
+                .HasKey(e => e.Id);
 
-            // Configuração para a entidade Aulas
             modelBuilder.Entity<Aulas>()
-                .HasKey(a => a.Id); // Define a propriedade Id como chave primária
-
-            // Configuração para a entidade Agendamentos
-            modelBuilder.Entity<Agendamento>()
-                .HasKey(a => a.Id); // Define a propriedade Id como chave primária
+                .HasKey(a => a.Id);
 
             modelBuilder.Entity<Agendamento>()
-                .HasOne(a => a.Professor) // Define a relação com a entidade Professores
-                .WithMany(p => p.Agendamentos) // Define a relação com a coleção de Agendamentos
-                .HasForeignKey(a => a.ProfessorId); // Define a propriedade ProfessorId como chave estrangeira
+                .HasKey(a => a.Id);
 
             modelBuilder.Entity<Agendamento>()
-                .HasOne(a => a.Equipamento) // Define a relação com a entidade Equipamentos
-                .WithMany(e => e.Agendamentos) // Define a relação com a coleção de Agendamentos
-                .HasForeignKey(a => a.EquipamentoId); // Define a propriedade EquipamentoId como chave estrangeira
+                .HasOne(a => a.Professor)
+                .WithMany(p => p.Agendamentos)
+                .HasForeignKey(a => a.ProfessorId);
+
+            modelBuilder.Entity<Agendamento>()
+                .HasOne(a => a.Equipamento)
+                .WithMany(e => e.Agendamentos)
+                .HasForeignKey(a => a.EquipamentoId);
 
             modelBuilder.Entity<AgendamentoAula>()
-            .HasKey(aa => new { aa.AgendamentoId, aa.AulaId }); // Define a chave primária
+                .HasKey(aa => new { aa.AgendamentoId, aa.AulaId });
 
             modelBuilder.Entity<AgendamentoAula>()
                 .HasOne(aa => aa.Agendamento)
@@ -82,10 +88,6 @@ namespace Agendamentos.Shared.Dados.Database
                 .HasOne(aa => aa.Aula)
                 .WithMany(a => a.AgendamentoAulas)
                 .HasForeignKey(aa => aa.AulaId);
-
-
-
         }
-
     }
 }
