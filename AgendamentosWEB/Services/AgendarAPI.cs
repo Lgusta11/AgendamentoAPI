@@ -1,4 +1,5 @@
-﻿using AgendamentosWEB.Requests;
+﻿using AgendamentoAPI.Response;
+using AgendamentosWEB.Requests;
 using AgendamentosWEB.Response;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;

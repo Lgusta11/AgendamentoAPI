@@ -1,4 +1,5 @@
 ﻿@page "/home"
+@using AgendamentoAPI.Response
 @inject LoginAPI loginAPI
 @inject AgendamentosAPI agendamentosAPI
 @inject ProfessoresAPI professoresId
@@ -43,11 +44,11 @@ else
                     <MudCard>
                         <MudCardHeader>
                             <CardHeaderContent>
-                                <MudText>Aula: @agendamento.NomeAula</MudText>
+                                <MudText>Aula: @agendamento.Aulas</MudText>
                             </CardHeaderContent>
                         </MudCardHeader>
                         <MudCardContent>
-                            <MudText>Equipamento: @agendamento.NomeEquipamento</MudText>
+                            <MudText>Equipamento: @agendamento.Equipamento</MudText>
                             <MudText>Data: @agendamento.Data.ToString("dd/MM/yyyy")</MudText>
                         </MudCardContent>
                     </MudCard>

@@ -58,12 +58,11 @@
 
             // Recupere o nome de usuário
             var userName = await loginAPI.GetUserNameAsync(email!);
-
-            // Recupere as funções do usuário
-            roles = await loginAPI.GetUserRolesAsync(userName!);
             // Após o login bem-sucedido, execute este código
             await JS.InvokeVoidAsync("location.reload");
 
+            // Recupere as funções do usuário
+            roles = await loginAPI.GetUserRolesAsync(userName!);
             if (roles.Contains("Admin"))
             {
                 Navigation.NavigateTo("/admin/home");
@@ -80,5 +79,6 @@
             apiError = "Erro: Email ou Senha incorretos!";
             Snackbar!.Add(apiError, Severity.Error);
         }
+           
     }
 }

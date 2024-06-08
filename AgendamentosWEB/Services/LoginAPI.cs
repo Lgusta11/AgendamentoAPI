@@ -29,15 +29,18 @@ namespace AgendamentosWEB.Services
             if (response.IsSuccessStatusCode)
             {
                 var info = await response.Content.ReadFromJsonAsync<InfoPessoaResponse>();
-                Claim[] dados =
+                if (info != null)
                 {
-                    new Claim(ClaimTypes.Name, info?.UserName!),
-                    new Claim(ClaimTypes.Email, info?.Email!)
-                };
+                    Claim[] dados =
+                    {
+                        new Claim(ClaimTypes.Name, info.UserName),
+                        new Claim(ClaimTypes.Email, info.Email)
+                    };
 
-                var identity = new ClaimsIdentity(dados, "Cookies");
-                pessoa = new ClaimsPrincipal(identity);
-                autenticado = true;
+                    var identity = new ClaimsIdentity(dados, "Cookies");
+                    pessoa = new ClaimsPrincipal(identity);
+                    autenticado = true;
+                }
             }
 
             return new AuthenticationState(pessoa);
@@ -56,14 +59,14 @@ namespace AgendamentosWEB.Services
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogError("Falha no login para o usuário {Email}", email);
-                    return new LoginResponse { Sucesso = false, Erros = ["Login/senha inválidos"] };
+                    return new LoginResponse { Sucesso = false, Erros = new[] { "Login/senha inválidos" } };
                 }
 
                 var content = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
                 if (content == null || !content.ContainsKey("token"))
                 {
                     _logger.LogError("Token não encontrado na resposta para o usuário {Email}", email);
-                    return new LoginResponse { Sucesso = false, Erros = ["Token não encontrado na resposta"] };
+                    return new LoginResponse { Sucesso = false, Erros = new[] { "Token não encontrado na resposta" } };
                 }
 
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", content["token"]);
@@ -74,7 +77,7 @@ namespace AgendamentosWEB.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro durante o login para o usuário {Email}", email);
-                return new LoginResponse { Sucesso = false, Erros = [ex.Message] };
+                return new LoginResponse { Sucesso = false, Erros = new[] { ex.Message } };
             }
         }
 
@@ -87,8 +90,7 @@ namespace AgendamentosWEB.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var responseObject = await response.Content.ReadFromJsonAsync<Dictionary<string, List<string>>>();
-                    var roles = responseObject["roles"];
-                    return roles!;
+                    return responseObject != null ? responseObject["roles"] : new List<string>();
                 }
 
                 _logger.LogWarning("Não foi possível recuperar as funções para o usuário {EmailOrUserName}", emailOrUserName);
@@ -101,7 +103,7 @@ namespace AgendamentosWEB.Services
             }
         }
 
-        public async Task<string> GetUserNameAsync(string email)
+        public async Task<string?> GetUserNameAsync(string email)
         {
             try
             {
@@ -110,8 +112,7 @@ namespace AgendamentosWEB.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var responseObject = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-                    var userName = responseObject["userName"];
-                    return userName;
+                    return responseObject != null ? responseObject["userName"] : null;
                 }
 
                 _logger.LogWarning("Não foi possível recuperar o nome do usuário {Email}", email);
@@ -123,7 +124,6 @@ namespace AgendamentosWEB.Services
                 return null;
             }
         }
-
 
         public async Task LogoutAsync()
         {
@@ -145,16 +145,24 @@ namespace AgendamentosWEB.Services
             return autenticado;
         }
 
-        public async Task<InfoPessoaResponse> GetUserInfoAsync()
+        public async Task<InfoPessoaResponse?> GetUserInfoAsync()
         {
-            var response = await _httpClient.GetAsync("auth/manage/info");
-            if (response.IsSuccessStatusCode)
+            try
             {
-                return await response.Content.ReadFromJsonAsync<InfoPessoaResponse>();
+                var response = await _httpClient.GetAsync("auth/manage/info");
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<InfoPessoaResponse>();
+                }
+                else
+                {
+                    _logger.LogError("Erro ao recuperar informações do usuário");
+                    return null;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _logger.LogError("Erro ao recuperar informações do usuário");
+                _logger.LogError(ex, "Erro ao recuperar informações do usuário");
                 return null;
             }
         }

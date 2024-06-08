@@ -4,6 +4,7 @@ using Agendamentos.EndPoints;
 using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Dados.Modelos;
 using Agendamentos.Shared.Modelos.Modelos;
+using AgendamentosAPI.Shared.Dados.Database;
 using AgendamentosAPI.Shared.Models.Modelos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -28,7 +29,10 @@ builder.Services.AddIdentity<PessoaComAcesso, Admin>()
 builder.Services.AddHostedService<CleanupService>();
 
 builder.Services.AddLogging();
-builder.Services.AddScoped(typeof(DAL<>));  // Adiciona a DAL como serviço genérico
+builder.Services.AddScoped(typeof(DAL<>));
+builder.Services.AddScoped<AgendamentoService>();
+
+// Adiciona a DAL como serviço genérico
 
 // Configuração do JWT Authentication
 var issuer = builder.Configuration["Jwt:Issuer"];

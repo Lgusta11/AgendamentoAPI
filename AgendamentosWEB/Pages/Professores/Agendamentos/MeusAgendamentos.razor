@@ -1,4 +1,5 @@
 ﻿@page "/agendamentos"
+@using AgendamentoAPI.Response
 @inject LoginAPI loginAPI
 @inject AgendamentosAPI agendamentosAPI
 @inject ProfessoresAPI professoresId
@@ -30,14 +31,14 @@ else
                 <MudCard>
                     <MudCardHeader>
                         <CardHeaderContent>
-                            <MudText>Aula: @agendamento.NomeAula</MudText>
+                            <MudText>Aula: @agendamento.Aulas</MudText>
                         </CardHeaderContent>
                         <CardHeaderActions>
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => OnButtonClicked(agendamento.Id)"></MudIconButton>
                         </CardHeaderActions>
                     </MudCardHeader>
                     <MudCardContent>
-                        <MudText>Equipamento: @agendamento.NomeEquipamento</MudText>
+                        <MudText>Equipamento: @agendamento.Equipamento</MudText>
                         <MudText>Data: @agendamento.Data.ToString("dd/MM/yyyy")</MudText>
                         <MudMessageBox @ref="mbox" Title="Cuidado" CancelText="Cancelar">
                             <MessageContent>

@@ -1,6 +1,7 @@
 ﻿@inject AgendamentosAPI agendamentosAPI
 @inject NavigationManager Navigation
 @page "/admin/agendamentos"
+@using AgendamentoAPI.Response
 
 <MudStack Class="mt-4 mb-4" Row="true" Justify="Justify.SpaceBetween">
     <MudText Class="mb-4" Typo="Typo.h4">Agendamentos cadastrados</MudText>
@@ -28,12 +29,12 @@ else
             <MudCard>
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Typo="Typo.h6">@agendamento.ProfessorNome</MudText>
+                        <MudText Typo="Typo.h6">@agendamento.Professor</MudText>
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    <MudText>Aula: @agendamento.NomeAula</MudText>
-                    <MudText>Equipamento: @agendamento.NomeEquipamento</MudText>
+                    <MudText>Aula: @agendamento.Aulas</MudText>
+                    <MudText>Equipamento: @agendamento.Equipamento</MudText>
                     <MudText>Data: @agendamento.Data.ToString("dd/MM/yyyy")</MudText>
                 </MudCardContent>
             </MudCard>
