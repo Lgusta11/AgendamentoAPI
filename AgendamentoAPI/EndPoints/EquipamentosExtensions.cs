@@ -20,7 +20,7 @@ namespace Agendamentos.EndPoints
                     var listaDeEquipamentos = dal.Listar();
                     if (listaDeEquipamentos is null)
                     {
-                        return Results.NotFound();
+                        return Results.Ok(new { Info = "Nenhum equipamento encontrado!" });
                     }
                     var listaDeEquipamentosResponse = listaDeEquipamentos.Select(e => new EquipamentoResponse(e.Id, e.Nome, e.Quantidade)).ToList();
                     return Results.Ok(listaDeEquipamentosResponse);

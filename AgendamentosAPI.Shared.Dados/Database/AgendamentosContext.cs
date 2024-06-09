@@ -4,7 +4,10 @@ using AgendamentosAPI.Shared.Models.Modelos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.Linq;
 
 namespace Agendamentos.Shared.Dados.Database
 {
@@ -41,6 +44,7 @@ namespace Agendamentos.Shared.Dados.Database
         {
             base.OnModelCreating(modelBuilder);
 
+            // Configurações para Identity
             modelBuilder.Entity<Admin>()
                 .HasIndex(a => a.Email)
                 .IsUnique();
@@ -54,17 +58,11 @@ namespace Agendamentos.Shared.Dados.Database
             modelBuilder.Entity<IdentityUserToken<int>>()
                 .HasKey(ut => new { ut.UserId, ut.LoginProvider, ut.Name });
 
-            modelBuilder.Entity<Professores>()
-                .HasKey(p => p.Id);
-
-            modelBuilder.Entity<Equipamentos>()
-                .HasKey(e => e.Id);
-
-            modelBuilder.Entity<Aulas>()
-                .HasKey(a => a.Id);
-
-            modelBuilder.Entity<Agendamento>()
-                .HasKey(a => a.Id);
+            // Configurações para entidades personalizadas
+            modelBuilder.Entity<Professores>().HasKey(p => p.Id);
+            modelBuilder.Entity<Equipamentos>().HasKey(e => e.Id);
+            modelBuilder.Entity<Aulas>().HasKey(a => a.Id);
+            modelBuilder.Entity<Agendamento>().HasKey(a => a.Id);
 
             modelBuilder.Entity<Agendamento>()
                 .HasOne(a => a.Professor)
@@ -88,6 +86,22 @@ namespace Agendamentos.Shared.Dados.Database
                 .HasOne(aa => aa.Aula)
                 .WithMany(a => a.AgendamentoAulas)
                 .HasForeignKey(aa => aa.AulaId);
+
+            // Configuração para converter todos os DateTime para UTC
+            var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
+                v => v.ToUniversalTime(),
+                v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                var properties = entityType.ClrType.GetProperties()
+                    .Where(p => p.PropertyType == typeof(DateTime) || p.PropertyType == typeof(DateTime?));
+
+                foreach (var property in properties)
+                {
+                    modelBuilder.Entity(entityType.Name).Property(property.Name).HasConversion(dateTimeConverter);
+                }
+            }
         }
     }
 }

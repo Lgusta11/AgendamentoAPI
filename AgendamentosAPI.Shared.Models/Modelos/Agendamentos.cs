@@ -24,6 +24,7 @@ namespace Agendamentos.Shared.Modelos.Modelos
         public int ProfessorId { get; set; }
         public virtual Professores? Professor { get; set; }
 
+
         public virtual ICollection<AgendamentoAula> AgendamentoAulas { get; set; }
 
     }

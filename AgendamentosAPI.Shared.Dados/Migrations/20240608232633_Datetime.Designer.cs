@@ -3,6 +3,7 @@ using System;
 using Agendamentos.Shared.Dados.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AgendamentosAPI.Shared.Dados.Migrations
 {
     [DbContext(typeof(AgendamentosContext))]
-    partial class AgendamentosContextModelSnapshot : ModelSnapshot
+    [Migration("20240608232633_Datetime")]
+    partial class Datetime
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -137,9 +140,6 @@ namespace AgendamentosAPI.Shared.Dados.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AulaId")
-                        .HasColumnType("integer");
 
                     b.Property<int?>("AulasId")
                         .HasColumnType("integer");

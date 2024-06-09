@@ -31,14 +31,14 @@ else
                 <MudCard>
                     <MudCardHeader>
                         <CardHeaderContent>
-                            <MudText>Aula: @agendamento.Aulas</MudText>
+                            <MudText>Aula: @agendamento.NomeAula</MudText>
                         </CardHeaderContent>
                         <CardHeaderActions>
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => OnButtonClicked(agendamento.Id)"></MudIconButton>
                         </CardHeaderActions>
                     </MudCardHeader>
                     <MudCardContent>
-                        <MudText>Equipamento: @agendamento.Equipamento</MudText>
+                        <MudText>Equipamento: @agendamento.NomeEquipamento</MudText>
                         <MudText>Data: @agendamento.Data.ToString("dd/MM/yyyy")</MudText>
                         <MudMessageBox @ref="mbox" Title="Cuidado" CancelText="Cancelar">
                             <MessageContent>

@@ -23,9 +23,9 @@ namespace AgendamentosAPI.Shared.Dados.Database
                 .Include(p => p.Professor)
                 .Include(p => p.Equipamento)
                 .Include(p => p.AgendamentoAulas)
-                .Include(p => p.AgendamentoAulas)
-                .Include(p => p.AgendamentoAulas)
+                .ThenInclude(aa => aa.Aula) // Inclui os detalhes da aula
                 .ToList();
+
 
                 return agendamentos;
 
