@@ -21,4 +21,5 @@ RUN dotnet publish "AgendamentosWEB.csproj" -c $configuration -o /app/publish /p
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "AgendamentosWEB.dll"]
+ENTRYPOINT ["dotnet", "AgendamentosWEB/bin/Debug/net8.0/AgendamentosWEB.dll"]
+
