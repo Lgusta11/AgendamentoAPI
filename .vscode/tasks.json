@@ -46,12 +46,12 @@
             "dockerBuild": {
                 "tag": "agendamentoapi:dev",
                 "target": "base",
-                "dockerfile": "${workspaceFolder}/AgendamentoAPI/Dockerfile",
+                "dockerfile": "${workspaceFolder}/AgendamentosWEB/Dockerfile",
                 "context": "${workspaceFolder}",
                 "pull": true
             },
             "netCore": {
-                "appProject": "${workspaceFolder}/AgendamentoAPI/AgendamentoAPI.csproj"
+                "appProject": "${workspaceFolder}/AgendamentosWEB/AgendamentosWEB.csproj"
             }
         },
         {
@@ -62,7 +62,7 @@
             ],
             "dockerBuild": {
                 "tag": "agendamentoapi:latest",
-                "dockerfile": "${workspaceFolder}/AgendamentoAPI/Dockerfile",
+                "dockerfile": "${workspaceFolder}/AgendamentosWEB/Dockerfile",
                 "context": "${workspaceFolder}",
                 "platform": {
                     "os": "linux",
@@ -71,7 +71,7 @@
                 "pull": true
             },
             "netCore": {
-                "appProject": "${workspaceFolder}/AgendamentoAPI/AgendamentoAPI.csproj"
+                "appProject": "${workspaceFolder}/AgendamentosWEB/AgendamentosWEB.csproj"
             }
         },
         {
@@ -82,7 +82,7 @@
             ],
             "dockerRun": {},
             "netCore": {
-                "appProject": "${workspaceFolder}/AgendamentoAPI/AgendamentoAPI.csproj",
+                "appProject": "${workspaceFolder}/AgendamentosWEB/AgendamentosWEB.csproj",
                 "enableDebugging": true
             }
         },
@@ -94,7 +94,7 @@
             ],
             "dockerRun": {},
             "netCore": {
-                "appProject": "${workspaceFolder}/AgendamentoAPI/AgendamentoAPI.csproj"
+                "appProject": "${workspaceFolder}/AgendamentosWEB/AgendamentosWEB.csproj"
             }
         }
     ]
