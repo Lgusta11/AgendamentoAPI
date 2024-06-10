@@ -41,8 +41,6 @@
     private string? email;
     private string? senha;
     private List<string> roles = new List<string>();
-    [SupplyParameterFromQuery]
-    public string? ReturnUrl { get; set; }
     string apiError = string.Empty;
 
     [Inject] ISnackbar? Snackbar { get; set; }

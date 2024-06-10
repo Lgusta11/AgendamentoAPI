@@ -86,7 +86,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddCors(
     options => options.AddPolicy(
         "wasm",
-        policy => policy.WithOrigins(builder.Configuration["BackendUrl"] ?? "https://localhost:7054",
+            policy => policy.WithOrigins(builder.Configuration["BackendUrl"] ?? "https://docker-aspnet-afs.onrender.com",
             builder.Configuration["FrontendUrl"] ?? "https://localhost:7056")
             .AllowAnyMethod()
             .SetIsOriginAllowed(pol => true)

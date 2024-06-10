@@ -1,0 +1,82 @@
+@page "/auth/login"
+@using Microsoft.AspNetCore.Components.Authorization
+@inject LoginAPI loginAPI
+@inject NavigationManager Navigation
+@attribute [AllowAnonymous]
+@inject IJSRuntime JS
+    <AuthorizeView>
+        <Authorized>      
+             <RedirectRole/>
+        </Authorized>
+        <NotAuthorized>
+         <MudForm>
+    <MudContainer Style="max-width: 500px; margin: auto;">
+        <MudPaper Elevation="1" Square="false" Class="pa-6">
+            <MudTitle Typo="Typo.h4">Login</MudTitle>
+            <MudText Typo="Typo.body1">Por favor, insira suas credenciais para entrar.</MudText>
+            <MudTextField T="string" Label="Email" @bind-Value="email"
+                          Variant="@MudBlazor.Variant.Filled" Class="mt-5"
+                          Required="true" RequiredError="Email obrigatório!"
+                          OnlyValidateIfDirty="true" FullWidth="true" />
+
+            <MudTextField T="string" Label="Senha" @bind-Value="senha"
+                          InputType="InputType.Password"
+                          Variant="@MudBlazor.Variant.Filled" Class="mt-5"
+                          Required="true" RequiredError="Senha obrigatória!"
+                          OnlyValidateIfDirty="true" FullWidth="true" />
+
+            <MudButton Variant="@MudBlazor.Variant.Filled" Color="Color.Primary"
+                       Class="mt-5" FullWidth="true" @onclick="FazerLogin">
+                Login
+            </MudButton>
+        </MudPaper>
+    </MudContainer>
+</MudForm>
+
+        </NotAuthorized>
+    </AuthorizeView>
+
+
+@code {
+    private string? email;
+    private string? senha;
+    private List<string> roles = new List<string>();
+    string apiError = string.Empty;
+
+    [Inject] ISnackbar? Snackbar { get; set; }
+
+    private async Task FazerLogin()
+    {
+        var resposta = await loginAPI.LoginAsync(email, senha);
+        if (resposta.Sucesso)
+        {
+            // Aqui armazena o token 
+            var tokenAsString = string.Join(",", resposta.Token);
+            await JS.InvokeVoidAsync("localStorage.setItem", "MeuCookieJWT", tokenAsString);
+
+            // Recupere o nome de usuário
+            var userName = await loginAPI.GetUserNameAsync(email!);
+            // Após o login bem-sucedido, execute este código
+            //await JS.InvokeVoidAsync("location.reload");
+
+            // Recupere as funções do usuário
+            roles = await loginAPI.GetUserRolesAsync(userName!);
+            if (roles.Contains("Admin"))
+            {
+                Navigation.NavigateTo("/admin/home");
+                return;
+            }
+            else if (roles.Contains("Professores"))
+            {
+                Navigation.NavigateTo("/home");
+                return;
+            }
+        }
+        else
+        {
+            apiError = "Erro: Email ou Senha incorretos!";
+            Snackbar!.Add(apiError, Severity.Error);
+        }
+           
+    }
+}

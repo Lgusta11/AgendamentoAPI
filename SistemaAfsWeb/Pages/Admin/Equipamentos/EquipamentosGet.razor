@@ -1,0 +1,87 @@
+﻿@page "/admin/equipamentos"
+@inject EquipamentosAPI equipamentosAPI
+@inject NavigationManager NavManager
+@inject IJSRuntime JS
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<AuthorizeView>
+    <Authorized Context="authContext">
+        <MudButton Color="Color.Success" OnClick="@(() => NavManager.NavigateTo("/admin/equipamentos/cadastrar"))">Adicionar Equipamento</MudButton>
+        <MudTable Items="@equipamentos" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<EquipamentoResponse,bool>(FilterFunc)" @bind-SelectedItem="selectedItem">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Equipamentos</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Id</MudTh>
+                <MudTh>Nome</MudTh>
+                <MudTh>Quantidade</MudTh>
+                <MudTh>Ações</MudTh>
+            </HeaderContent>
+            <RowTemplate Context="equipamento">
+                <MudTd DataLabel="Id">@equipamento.Id</MudTd>
+                <MudTd DataLabel="Nome">@equipamento.Nome</MudTd>
+                <MudTd DataLabel="Quantidade">@equipamento.Quantidade</MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" OnClick="@(() => NavManager.NavigateTo($"/admin/equipamentos/editar/{equipamento.Id}"))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteEquipamento(equipamento.Id))" />
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    </Authorized>
+    <NotAuthorized>
+        @{
+            NavManager.NavigateTo("/auth/login");
+        }
+    </NotAuthorized>
+</AuthorizeView>
+
+<div class="d-flex flex-wrap mt-4">
+    <MudSwitch @bind-Value="@hover" Color="Color.Secondary">Hover</MudSwitch>
+    <MudSwitch @bind-Value="@dense" Color="Color.Secondary">Dense</MudSwitch>
+    <MudSwitch @bind-Value="@striped" Color="Color.Tertiary">Striped</MudSwitch>
+    <MudSwitch @bind-Value="@bordered" Color="Color.Warning">Bordered</MudSwitch>
+    <MudSpacer />
+
+    <div style="min-width:200px;">
+        <MudText Inline="true" Class="align-self-center">Selected: @selectedItem?.Nome</MudText>
+    </div>
+</div>
+
+@code {
+    private bool dense = false;
+    private bool hover = true;
+    private bool striped = false;
+    private bool bordered = false;
+    private string searchString = "";
+    private EquipamentoResponse selectedItem = null!;
+    private ICollection<EquipamentoResponse>? equipamentos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        equipamentos = await equipamentosAPI.GetEquipamentosAsync();
+    }
+
+    private bool FilterFunc(EquipamentoResponse equipamento)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (equipamento.Nome.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+
+    private async Task DeleteEquipamento(int id)
+    {
+        bool confirm = await JS.InvokeAsync<bool>("confirm", "Você realmente quer excluir este equipamento?");
+        if (confirm)
+        {
+            await equipamentosAPI.DeleteEquipamentoAsync(id);
+            equipamentos = await equipamentosAPI.GetEquipamentosAsync(); // Atualiza a lista de equipamentos
+        }
+    }
+}

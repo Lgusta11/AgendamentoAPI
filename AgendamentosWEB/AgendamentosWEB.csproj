@@ -25,4 +25,8 @@
     <ProjectReference Include="..\AgendamentosAPI.Shared.Dados\AgendamentosAPI.Shared.Dados.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Deploy\" />
+  </ItemGroup>
+
 </Project>
