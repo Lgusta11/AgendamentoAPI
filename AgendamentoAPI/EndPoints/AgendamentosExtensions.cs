@@ -25,7 +25,7 @@ namespace Agendamentos.EndPoints
                 var listaDeAgendamentos = agendamentoService.ListarAgendamentos();
                 if (listaDeAgendamentos is null || !listaDeAgendamentos.Any())
                 {
-                    return Results.NotFound("Nenhum agendamento encontrado.");
+                    return Results.Ok("Nenhum agendamento encontrado.");
                 }
 
                 var listaDeAgendamentosResponse = new List<AgendamentoResponse>();
@@ -54,7 +54,7 @@ namespace Agendamentos.EndPoints
                 var agendamentosDoProfessor = agendamentoService.ListarAgendamentos().Where(a => a.ProfessorId == professorId);
                 if (agendamentosDoProfessor is null || !agendamentosDoProfessor.Any())
                 {
-                    return Results.NotFound($"Nenhum agendamento encontrado para o professor com ID {professorId}.");
+                    return Results.Ok($"Nenhum agendamento encontrado para o professor com ID {professorId}.");
                 }
 
                 var listaDeAgendamentosResponse = new List<AgendamentoResponse>();
@@ -73,7 +73,7 @@ namespace Agendamentos.EndPoints
                     }
                 }
                 return Results.Ok(listaDeAgendamentosResponse);
-            }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
+            });
 
 
 

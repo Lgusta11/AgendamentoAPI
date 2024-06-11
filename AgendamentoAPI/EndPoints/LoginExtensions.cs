@@ -51,27 +51,32 @@ namespace AgendamentoAPI.EndPoints
                 // Geração do Token JWT
                 var claims = new[]
                 {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Email!),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Email!),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 };
 
                 var jwtKey = _config["Jwt:Key"];
                 if (jwtKey == null)
                 {
-                    throw new ArgumentNullException(nameof(jwtKey),
-                                                        "JwtKey cannot be null.");
+                    throw new ArgumentNullException(nameof(jwtKey), "JwtKey cannot be null.");
                 }
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-                var token = new JwtSecurityToken(_config["Jwt:Issuer"],
+                var token = new JwtSecurityToken(
+                    _config["Jwt:Issuer"],
                     _config["Jwt:Issuer"],
                     claims,
-                    expires: DateTime.Now.AddMinutes(30),
+                    expires: DateTime.Now.AddDays(1), // Aumentar validade para 1 dia
                     signingCredentials: creds);
 
-                return Results.Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token), redirectUrl });
+                return Results.Ok(new
+                {
+                    token = new JwtSecurityTokenHandler().WriteToken(token),
+                    redirectUrl,
+                    expiration = token.ValidTo // Inclui o tempo de expiração
+                });
             });
 
             groupBuilder.MapGet("GetRoles/{emailOrUserName}", async ([FromServices] UserManager<PessoaComAcesso> userManager, string emailOrUserName) =>
@@ -102,14 +107,13 @@ namespace AgendamentoAPI.EndPoints
                 return Results.Ok(new { userName = user.UserName });
             });
 
-
             groupBuilder.MapGet("manage/info", async (HttpContext context) =>
             {
                 var userManager = context.RequestServices.GetRequiredService<UserManager<PessoaComAcesso>>();
                 var user = await userManager.GetUserAsync(context.User);
                 if (user == null)
                 {
-                    return Results.Unauthorized();
+                    return Results.Ok("Não foi possivel recuperar os dados do usuario.");
                 }
 
                 var roles = await userManager.GetRolesAsync(user);
@@ -124,6 +128,8 @@ namespace AgendamentoAPI.EndPoints
 
                 return Results.Ok(userInfo);
             });
+
+
         }
     }
 }

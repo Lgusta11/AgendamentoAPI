@@ -122,10 +122,11 @@ app.AddEndPointsCadastro();
 app.AddEndPoinsLogin();
 
 // Endpoint de Logout
-app.MapPost("auth/logout", async ([FromServices] SignInManager<PessoaComAcesso> signInManager) =>
+app.MapPost("auth/logout", async ([FromServices] SignInManager<PessoaComAcesso> signInManager, [FromServices] IHttpContextAccessor httpContextAccessor) =>
 {
     await signInManager.SignOutAsync();
-    return Results.Ok();
+    httpContextAccessor.HttpContext?.Response.Cookies.Delete(".AspNetCore.Identity.Application");
+    return Results.Ok(new { message = "Logout successful" });
 }).WithTags("Autenticação");
 
 // Configuração do Swagger

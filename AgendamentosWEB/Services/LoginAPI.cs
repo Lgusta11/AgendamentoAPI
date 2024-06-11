@@ -6,6 +6,8 @@ using System.Net.Http.Headers;
 using AgendamentosWEB.Response;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
+using Microsoft.JSInterop;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AgendamentosWEB.Services
 {
@@ -14,50 +16,59 @@ namespace AgendamentosWEB.Services
         private bool autenticado = false;
         private readonly HttpClient _httpClient;
         private readonly ILogger<LoginAPI> _logger;
+        private readonly IJSRuntime _jsRuntime;
 
-        public LoginAPI(IHttpClientFactory factory, ILogger<LoginAPI> logger)
+        public LoginAPI(IHttpClientFactory factory, ILogger<LoginAPI> logger, IJSRuntime jsRuntime)
         {
             _httpClient = factory.CreateClient("API");
             _logger = logger;
+            _jsRuntime = jsRuntime;
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            autenticado = false;
             var pessoa = new ClaimsPrincipal();
-            var response = await _httpClient.GetAsync("auth/manage/info");
+            var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "token");
 
-            if (response.IsSuccessStatusCode)
+            if (!string.IsNullOrEmpty(token))
             {
-                var info = await response.Content.ReadFromJsonAsync<InfoPessoaResponse>();
-                if (info != null)
-                {
-                    Claim[] dados =
-                    {
-                        new Claim(ClaimTypes.Name, info.UserName),
-                        new Claim(ClaimTypes.Email, info.Email)
-                    };
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                var response = await _httpClient.GetAsync("auth/manage/info");
 
-                    var identity = new ClaimsIdentity(dados, "Cookies");
-                    pessoa = new ClaimsPrincipal(identity);
-                    autenticado = true;
+                if (response.IsSuccessStatusCode)
+                {
+                    var info = await response.Content.ReadFromJsonAsync<InfoPessoaResponse>();
+                    if (info != null)
+                    {
+                        Claim[] dados =
+                        {
+                    new Claim(ClaimTypes.Name, info.UserName),
+                    new Claim(ClaimTypes.Email, info.Email)
+                };
+
+                        var identity = new ClaimsIdentity(dados, "AuthenticationType");
+                        pessoa = new ClaimsPrincipal(identity);
+                        autenticado = true;
+
+                        // Armazenar o estado de autenticação no localStorage
+                        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "autenticado", autenticado.ToString());
+                    }
                 }
             }
 
             return new AuthenticationState(pessoa);
         }
 
+
         public async Task<LoginResponse> LoginAsync(string email, string senha)
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("auth/login?useCookies=true", new
+                var response = await _httpClient.PostAsJsonAsync("auth/Login", new
                 {
                     email,
                     password = senha
                 });
-
-               
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -72,8 +83,23 @@ namespace AgendamentosWEB.Services
                     return new LoginResponse { Sucesso = false, Erros = new[] { "Token não encontrado na resposta" } };
                 }
 
+                // Armazenar o token no localStorage
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "token", content["token"]);
+
+                // Adicionar o token ao cabeçalho de autorização
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", content["token"]);
-                NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+
+                // Verificar se o token foi adicionado corretamente
+                if (_httpClient.DefaultRequestHeaders.Authorization?.Parameter != content["token"])
+                {
+                    _logger.LogError("Falha ao adicionar o token ao cabeçalho de autorização para o usuário {Email}", email);
+                    return new LoginResponse { Sucesso = false, Erros = new[] { "Falha ao adicionar o token ao cabeçalho de autorização" } };
+                }
+
+                NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+            new Claim(ClaimTypes.Name, email)
+        }, "Cookies")))));
                 _logger.LogInformation("Login bem sucedido para o usuário {Email}", email);
                 return new LoginResponse { Sucesso = true };
             }
@@ -83,6 +109,7 @@ namespace AgendamentosWEB.Services
                 return new LoginResponse { Sucesso = false, Erros = new[] { ex.Message } };
             }
         }
+
 
         public async Task<List<string>> GetUserRolesAsync(string emailOrUserName)
         {
@@ -115,15 +142,15 @@ namespace AgendamentosWEB.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var responseObject = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-                    return responseObject != null ? responseObject["userName"] : null;
+                    return responseObject?["userName"];
                 }
 
-                _logger.LogWarning("Não foi possível recuperar o nome do usuário {Email}", email);
+                _logger.LogWarning("Não foi possível recuperar o nome de usuário para o email {Email}", email);
                 return null;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao recuperar o nome do usuário {Email}", email);
+                _logger.LogError(ex, "Erro ao recuperar o nome de usuário para o email {Email}", email);
                 return null;
             }
         }
@@ -132,8 +159,9 @@ namespace AgendamentosWEB.Services
         {
             try
             {
-                await _httpClient.PostAsync("auth/logout", null);
-                NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+                await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "token");
+                _httpClient.DefaultRequestHeaders.Authorization = null;
+                NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()))));
                 _logger.LogInformation("Logout bem sucedido");
             }
             catch (Exception ex)
@@ -152,16 +180,20 @@ namespace AgendamentosWEB.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync("auth/manage/info");
-                if (response.IsSuccessStatusCode)
+                var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "token");
+
+                if (!string.IsNullOrEmpty(token))
                 {
-                    return await response.Content.ReadFromJsonAsync<InfoPessoaResponse>();
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    var response = await _httpClient.GetAsync("auth/manage/info");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return await response.Content.ReadFromJsonAsync<InfoPessoaResponse>();
+                    }
                 }
-                else
-                {
-                    _logger.LogError("Erro ao recuperar informações do usuário");
-                    return null;
-                }
+
+                _logger.LogError("Erro ao recuperar informações do usuário");
+                return null;
             }
             catch (Exception ex)
             {
@@ -171,6 +203,3 @@ namespace AgendamentosWEB.Services
         }
     }
 }
-
-
-

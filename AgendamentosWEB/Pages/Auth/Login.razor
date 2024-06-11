@@ -1,53 +1,68 @@
 @page "/auth/login"
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.ComponentModel.DataAnnotations
 @inject LoginAPI loginAPI
 @inject NavigationManager Navigation
 @attribute [AllowAnonymous]
 @inject IJSRuntime JS
-    <AuthorizeView>
-        <Authorized>      
-             <RedirectRole/>
-        </Authorized>
-        <NotAuthorized>
-         <MudForm>
-    <MudContainer Style="max-width: 500px; margin: auto;">
-        <MudPaper Elevation="1" Square="false" Class="pa-6">
-            <MudTitle Typo="Typo.h4">Login</MudTitle>
-            <MudText Typo="Typo.body1">Por favor, insira suas credenciais para entrar.</MudText>
-            <MudTextField T="string" Label="Email" @bind-Value="email"
-                          Variant="@MudBlazor.Variant.Filled" Class="mt-5"
-                          Required="true" RequiredError="Email obrigatório!"
-                          OnlyValidateIfDirty="true" FullWidth="true" />
 
-            <MudTextField T="string" Label="Senha" @bind-Value="senha"
-                          InputType="InputType.Password"
-                          Variant="@MudBlazor.Variant.Filled" Class="mt-5"
-                          Required="true" RequiredError="Senha obrigatória!"
-                          OnlyValidateIfDirty="true" FullWidth="true" />
+<AuthorizeView>
+    <Authorized>      
+        <RedirectRole/>
+    </Authorized>
+    <NotAuthorized>
+        <MudForm OnValidSubmit="FazerLogin">
+            <MudContainer Style="max-width: 500px; margin: auto;">
+                <MudPaper Elevation="1" Square="false" Class="pa-6">
+                    <MudTitle Typo="Typo.h4">Login</MudTitle>
+                    <MudText Typo="Typo.body1">Por favor, insira suas credenciais para entrar.</MudText>
+                    <MudTextField T="string" Label="Email" @bind-Value="loginData.Email"
+                                Variant="@MudBlazor.Variant.Filled" Class="mt-5"
+                                Required="true" RequiredError="Email obrigatório!"
+                                OnlyValidateIfDirty="true" FullWidth="true" />
 
-            <MudButton Variant="@MudBlazor.Variant.Filled" Color="Color.Primary"
-                       Class="mt-5" FullWidth="true" @onclick="FazerLogin">
-                Login
-            </MudButton>
-        </MudPaper>
-    </MudContainer>
-</MudForm>
+                    <MudTextField T="string" Label="Senha" @bind-Value="loginData.Senha"
+                                InputType="InputType.Password"
+                                Variant="@MudBlazor.Variant.Filled" Class="mt-5"
+                                Required="true" RequiredError="Senha obrigatória!"
+                                OnlyValidateIfDirty="true" FullWidth="true" />
 
-        </NotAuthorized>
-    </AuthorizeView>
-
+                    <MudButton Variant="@MudBlazor.Variant.Filled" Color="Color.Primary" @onclick="FazerLogin"
+                            Class="mt-5" FullWidth="true" Type="submit">
+                        Login
+                    </MudButton>
+                </MudPaper>
+            </MudContainer>
+        </MudForm>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
-    private string? email;
-    private string? senha;
-    private List<string> roles = new List<string>();
-    string apiError = string.Empty;
+    private LoginData loginData = new LoginData();
+    
 
     [Inject] ISnackbar? Snackbar { get; set; }
 
+    private class LoginData
+    {
+        [Required(ErrorMessage = "Email obrigatório!")]
+        [EmailAddress(ErrorMessage = "Email inválido!")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "Senha obrigatória!")]
+        [MinLength(6, ErrorMessage = "A senha deve ter pelo menos 6 caracteres!")]
+        public string Senha { get; set; }
+    }
+
     private async Task FazerLogin()
     {
-        var resposta = await loginAPI.LoginAsync(email, senha);
+        if (string.IsNullOrEmpty(loginData.Email) || string.IsNullOrEmpty(loginData.Senha))
+        {
+            Snackbar!.Add("Erro: Preencha todos os campos!", Severity.Error);
+            return;
+        }
+
+        var resposta = await loginAPI.LoginAsync(loginData.Email, loginData.Senha);
         if (resposta.Sucesso)
         {
             // Aqui armazena o token 
@@ -55,19 +70,16 @@
             await JS.InvokeVoidAsync("localStorage.setItem", "MeuCookieJWT", tokenAsString);
 
             // Recupere o nome de usuário
-            var userName = await loginAPI.GetUserNameAsync(email!);
-            
-            // Recupere as funções do usuário
-            roles = await loginAPI.GetUserRolesAsync(userName!);
-          
-            Navigation.NavigateTo("/");
+            var userName = await loginAPI.GetUserNameAsync(loginData.Email);
 
+            // Recupere as funções do usuário
+            var roles = await loginAPI.GetUserRolesAsync(userName);
+
+            Navigation.NavigateTo("/");
         }
         else
         {
-            apiError = "Erro: Email ou Senha incorretos!";
-            Snackbar!.Add(apiError, Severity.Error);
+            Snackbar!.Add("Erro: Email ou Senha incorretos!", Severity.Error);
         }
-           
     }
 }
