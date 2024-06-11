@@ -5,6 +5,7 @@ using AgendamentosWEB.Requests;
 using System.Net.Http.Headers;
 using AgendamentosWEB.Response;
 using Microsoft.Extensions.Logging;
+using System.Net.Http;
 
 namespace AgendamentosWEB.Services
 {
@@ -50,11 +51,13 @@ namespace AgendamentosWEB.Services
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("auth/Login", new
+                var response = await _httpClient.PostAsJsonAsync("auth/login?useCookies=true", new
                 {
                     email,
                     password = senha
                 });
+
+               
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -168,3 +171,6 @@ namespace AgendamentosWEB.Services
         }
     }
 }
+
+
+

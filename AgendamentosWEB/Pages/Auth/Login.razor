@@ -56,21 +56,12 @@
 
             // Recupere o nome de usuário
             var userName = await loginAPI.GetUserNameAsync(email!);
-            // Após o login bem-sucedido, execute este código
-            await JS.InvokeVoidAsync("location.reload");
-
+            
             // Recupere as funções do usuário
             roles = await loginAPI.GetUserRolesAsync(userName!);
-            if (roles.Contains("Admin"))
-            {
-                Navigation.NavigateTo("/admin/home");
-                return;
-            }
-            else if (roles.Contains("Professores"))
-            {
-                Navigation.NavigateTo("/home");
-                return;
-            }
+          
+            Navigation.NavigateTo("/");
+
         }
         else
         {

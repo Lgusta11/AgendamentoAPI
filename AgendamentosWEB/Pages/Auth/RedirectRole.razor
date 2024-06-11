@@ -1,23 +1,28 @@
+@page "/"
+@attribute [AllowAnonymous]
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @inject NavigationManager Navigation
 @inject LoginAPI loginAPI
 
 @code {
-    private List<string> roles = new List<string>();
     private string? email;
+    private List<string> roles = new List<string>();
 
     protected override async Task OnInitializedAsync()
     {
         // Obtenha o estado de autenticação do usuário
         var authState = await loginAPI.GetAuthenticationStateAsync();
-        var user = authState.User;
+        var user = authState?.User;
 
-        if (user.Identity.IsAuthenticated)
+        if (user?.Identity != null && user.Identity.IsAuthenticated)
         {
             email = user.Identity.Name;
 
             // Recupere as funções do usuário
-            roles = await loginAPI.GetUserRolesAsync(email);
+            if (!string.IsNullOrEmpty(email))
+            {
+                roles = await loginAPI.GetUserRolesAsync(email);
+            }
 
             if (roles.Contains("Admin"))
             {
@@ -30,7 +35,6 @@
         }
         else
         {
-            // Redireciona para a página de login se o usuário não estiver autenticado
             Navigation.NavigateTo("/auth/login");
         }
     }
