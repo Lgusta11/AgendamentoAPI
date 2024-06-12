@@ -12,8 +12,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, LoginAPI>();
-builder.Services.AddScoped(sp => (LoginAPI)sp.GetRequiredService<AuthenticationStateProvider>());
-
+builder.Services.AddScoped<LoginAPI>(sp => (LoginAPI)sp.GetRequiredService<AuthenticationStateProvider>());
 
 builder.Services.AddMudServices();
 builder.Services.AddRadzenComponents();

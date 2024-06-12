@@ -113,7 +113,7 @@ namespace AgendamentoAPI.EndPoints
                 var user = await userManager.GetUserAsync(context.User);
                 if (user == null)
                 {
-                    return Results.Unauthorized();
+                    return Results.Ok();
                 }
 
                 var roles = await userManager.GetRolesAsync(user);
