@@ -113,7 +113,7 @@ namespace AgendamentoAPI.EndPoints
                 var user = await userManager.GetUserAsync(context.User);
                 if (user == null)
                 {
-                    return Results.Ok("Não foi possivel recuperar os dados do usuario.");
+                    return Results.Unauthorized();
                 }
 
                 var roles = await userManager.GetRolesAsync(user);

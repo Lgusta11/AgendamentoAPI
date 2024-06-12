@@ -40,23 +40,62 @@ namespace AgendamentosWEB.Services
                     var info = await response.Content.ReadFromJsonAsync<InfoPessoaResponse>();
                     if (info != null)
                     {
-                        Claim[] dados =
+                        if (info.UserName != null && info.Email != null)
                         {
-                    new Claim(ClaimTypes.Name, info.UserName),
-                    new Claim(ClaimTypes.Email, info.Email)
-                };
+                            Claim[] dados =
+                            {
+                        new Claim(ClaimTypes.Name, info.UserName),
+                        new Claim(ClaimTypes.Email, info.Email)
+                    };
 
-                        var identity = new ClaimsIdentity(dados, "AuthenticationType");
-                        pessoa = new ClaimsPrincipal(identity);
-                        autenticado = true;
+                            var identity = new ClaimsIdentity(dados, "AuthenticationType");
+                            pessoa = new ClaimsPrincipal(identity);
+                            autenticado = true;
 
-                        // Armazenar o estado de autenticação no localStorage
-                        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "autenticado", autenticado.ToString());
+                            // Armazenar o estado de autenticação no localStorage
+                            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "autenticado", autenticado.ToString());
+                        }
+                        else
+                        {
+                            _logger.LogError("Erro ao recuperar informações do usuário");
+                            return null!;
+                        }
                     }
                 }
             }
 
             return new AuthenticationState(pessoa);
+        }
+
+
+        public async Task<bool> VerificaAutenticado()
+        {
+            var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "token");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                var response = await _httpClient.GetAsync("auth/manage/info");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var info = await response.Content.ReadFromJsonAsync<InfoPessoaResponse>();
+                    if (info != null)
+                    {
+                        if (info.UserName != null && info.Email != null)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            _logger.LogError("Erro ao recuperar informações do usuário");
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
 
@@ -170,11 +209,6 @@ namespace AgendamentosWEB.Services
             }
         }
 
-        public async Task<bool> VerificaAutenticado()
-        {
-            await GetAuthenticationStateAsync();
-            return autenticado;
-        }
 
         public async Task<InfoPessoaResponse?> GetUserInfoAsync()
         {

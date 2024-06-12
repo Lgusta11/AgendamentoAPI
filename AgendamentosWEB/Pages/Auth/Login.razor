@@ -17,15 +17,16 @@
                     <MudTitle Typo="Typo.h4">Login</MudTitle>
                     <MudText Typo="Typo.body1">Por favor, insira suas credenciais para entrar.</MudText>
                     <MudTextField T="string" Label="Email" @bind-Value="loginData.Email"
-                                Variant="@MudBlazor.Variant.Filled" Class="mt-5"
-                                Required="true" RequiredError="Email obrigatório!"
-                                OnlyValidateIfDirty="true" FullWidth="true" />
+                                  Variant="@MudBlazor.Variant.Filled" Class="mt-5"
+                                  Required="true" RequiredError="Email obrigatório!"
+                                  OnlyValidateIfDirty="true" FullWidth="true" InputId="emailField" />
 
                     <MudTextField T="string" Label="Senha" @bind-Value="loginData.Senha"
-                                InputType="InputType.Password"
-                                Variant="@MudBlazor.Variant.Filled" Class="mt-5"
-                                Required="true" RequiredError="Senha obrigatória!"
-                                OnlyValidateIfDirty="true" FullWidth="true" />
+                                  InputType="InputType.Password"
+                                  Variant="@MudBlazor.Variant.Filled" Class="mt-5"
+                                  Required="true" RequiredError="Senha obrigatória!"
+                                  OnlyValidateIfDirty="true" FullWidth="true" InputId="passwordField" />
+
 
                     <MudButton Variant="@MudBlazor.Variant.Filled" Color="Color.Primary" @onclick="FazerLogin"
                             Class="mt-5" FullWidth="true" Type="submit">
@@ -73,7 +74,9 @@
             var userName = await loginAPI.GetUserNameAsync(loginData.Email);
 
             // Recupere as funções do usuário
-            var roles = await loginAPI.GetUserRolesAsync(userName);
+            var roles = await loginAPI.GetUserRolesAsync(userName!);
+
+            //Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
 
             Navigation.NavigateTo("/");
         }
