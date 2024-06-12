@@ -32,8 +32,6 @@ builder.Services.AddLogging();
 builder.Services.AddScoped(typeof(DAL<>));
 builder.Services.AddScoped<AgendamentoService>();
 
-// Adiciona a DAL como serviço genérico
-
 // Configuração do JWT Authentication
 var issuer = builder.Configuration["Jwt:Issuer"];
 var key = builder.Configuration["Jwt:Key"];

@@ -18,7 +18,7 @@ namespace AgendamentoAPI.EndPoints
             var groupBuilder = app.MapGroup("auth")
                 .WithTags("Autenticação");
 
-            groupBuilder.MapPost("Login", async ([FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] SignInManager<PessoaComAcesso> signInManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] LoginRequest loginRequest, IConfiguration _config) =>
+            groupBuilder.MapPost("Login", async ([FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] SignInManager<PessoaComAcesso> signInManager, [FromBody] LoginRequest loginRequest, IConfiguration _config) =>
             {
                 var user = await userManager.FindByEmailAsync(loginRequest.Email);
                 if (user == null)
@@ -39,7 +39,7 @@ namespace AgendamentoAPI.EndPoints
                 {
                     redirectUrl = "/Admin/Home";
                 }
-                else if (roles.Contains("Professor"))
+                else if (roles.Contains("Professores"))
                 {
                     redirectUrl = "/Home";
                 }
@@ -79,6 +79,8 @@ namespace AgendamentoAPI.EndPoints
                 });
             });
 
+           
+
             groupBuilder.MapGet("GetRoles/{emailOrUserName}", async ([FromServices] UserManager<PessoaComAcesso> userManager, string emailOrUserName) =>
             {
                 var user = await userManager.FindByEmailAsync(emailOrUserName);
@@ -113,7 +115,7 @@ namespace AgendamentoAPI.EndPoints
                 var user = await userManager.GetUserAsync(context.User);
                 if (user == null)
                 {
-                return Results.NotFound(new { message = "Usuário não encontrado." });
+                    return Results.NotFound(new { message = "Usuário não encontrado." });
                 }
 
                 var roles = await userManager.GetRolesAsync(user);
@@ -127,9 +129,7 @@ namespace AgendamentoAPI.EndPoints
                 };
 
                 return Results.Ok(userInfo);
-            });
-
-
+            }).RequireAuthorization(); 
         }
     }
 }
