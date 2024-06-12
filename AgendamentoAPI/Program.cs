@@ -32,8 +32,6 @@ builder.Services.AddLogging();
 builder.Services.AddScoped(typeof(DAL<>));
 builder.Services.AddScoped<AgendamentoService>();
 
-// Adiciona a DAL como serviço genérico
-
 // Configuração do JWT Authentication
 var issuer = builder.Configuration["Jwt:Issuer"];
 var key = builder.Configuration["Jwt:Key"];
@@ -128,6 +126,8 @@ app.MapPost("auth/logout", async ([FromServices] SignInManager<PessoaComAcesso> 
     httpContextAccessor.HttpContext?.Response.Cookies.Delete(".AspNetCore.Identity.Application");
     return Results.Ok(new { message = "Logout successful" });
 }).WithTags("Autenticação");
+
+
 
 // Configuração do Swagger
 app.UseSwagger();

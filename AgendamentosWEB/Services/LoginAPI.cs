@@ -1,6 +1,6 @@
 ﻿using AgendamentosWEB.Response;
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
@@ -9,72 +9,72 @@ namespace AgendamentosWEB.Services
 {
     public class LoginAPI : AuthenticationStateProvider
     {
-        private bool autenticado = false;
         private readonly HttpClient _httpClient;
         private readonly ILogger<LoginAPI> _logger;
+        private readonly ILocalStorageService _localStorageService;
+        private bool autenticado = false;
 
-        public LoginAPI(IHttpClientFactory factory, ILogger<LoginAPI> logger)
+        public LoginAPI(IHttpClientFactory factory, ILogger<LoginAPI> logger, ILocalStorageService localStorageService)
         {
             _httpClient = factory.CreateClient("API");
             _logger = logger;
-
+            _localStorageService = localStorageService;
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             autenticado = false;
-            var pessoa = new ClaimsPrincipal(new ClaimsIdentity());
-
-            var response = await _httpClient.GetAsync("auth/manage/info");
+            var pessoa = new ClaimsPrincipal();
+            var response = await _httpClient.GetAsync("auth/autenticado");
 
             if (response.IsSuccessStatusCode)
             {
                 var info = await response.Content.ReadFromJsonAsync<InfoPessoaResponse>();
-                if (info != null)
-                {
-                    Claim[] dados = new Claim[]
-                    {
-                        new Claim(ClaimTypes.Name, info.UserName),
-                        new Claim(ClaimTypes.Email, info.Email)
-                    };
+                Claim[] dados =
+                [
+                    new Claim(ClaimTypes.Name, info.Email),
+                new Claim(ClaimTypes.Email, info.Email)
+                ];
 
-                    var identity = new ClaimsIdentity(dados, "Cookies");
-                    pessoa = new ClaimsPrincipal(identity);
-                    autenticado = true;
-                }
+                var identity = new ClaimsIdentity(dados, "Cookies");
+                pessoa = new ClaimsPrincipal(identity);
+                autenticado = true;
             }
 
             return new AuthenticationState(pessoa);
         }
 
-        public async Task<LoginResponse> LoginAsync(string email, string senha)
-        {
-            var response = await _httpClient.PostAsJsonAsync("auth/login", new
-            {
-                Email = email,
-                Password = senha
-            });
+        public async Task<bool> VerificaAutenticado()
+          {
+              await GetAuthenticationStateAsync();
+              return autenticado;
+          } 
 
+        public async Task<LoginResponse> LoginAsync(string email, string password)
+        {
+            var response = await _httpClient.PostAsJsonAsync("auth/login", new { Email = email, Password = password });
             if (response.IsSuccessStatusCode)
             {
-                NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
-                return new LoginResponse { Sucesso = true };
+                var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                if (loginResponse != null && !string.IsNullOrEmpty(loginResponse.Token))
+                {
+                    await _localStorageService.SetItemAsync("authToken", loginResponse.Token);
+                    NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+                    return new LoginResponse { Sucesso = true };
+                }
             }
 
-            return new LoginResponse {Sucesso = false};
+            return new LoginResponse { Sucesso = false };
         }
 
         public async Task LogoutAsync()
         {
-            await _httpClient.PostAsync("auth/logout", null);
+            await _localStorageService.RemoveItemAsync("authToken");
+            _httpClient.DefaultRequestHeaders.Authorization = null;
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
 
-        public async Task<bool> VerificaAutenticado()
-        {
-            await GetAuthenticationStateAsync();
-            return autenticado;
-        }
+
 
         public async Task<List<string>> GetUserRolesAsync(string emailOrUserName)
         {
@@ -138,6 +138,5 @@ namespace AgendamentosWEB.Services
                 return null;
             }
         }
-
     }
 }

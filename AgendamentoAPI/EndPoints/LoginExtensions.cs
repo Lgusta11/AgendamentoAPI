@@ -18,7 +18,7 @@ namespace AgendamentoAPI.EndPoints
             var groupBuilder = app.MapGroup("auth")
                 .WithTags("Autenticação");
 
-            groupBuilder.MapPost("Login", async ([FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] SignInManager<PessoaComAcesso> signInManager, [FromServices] RoleManager<Admin> roleManager, [FromBody] LoginRequest loginRequest, IConfiguration _config) =>
+            groupBuilder.MapPost("Login", async ([FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] SignInManager<PessoaComAcesso> signInManager, [FromBody] LoginRequest loginRequest, IConfiguration _config) =>
             {
                 var user = await userManager.FindByEmailAsync(loginRequest.Email);
                 if (user == null)
@@ -39,7 +39,7 @@ namespace AgendamentoAPI.EndPoints
                 {
                     redirectUrl = "/Admin/Home";
                 }
-                else if (roles.Contains("Professor"))
+                else if (roles.Contains("Professores"))
                 {
                     redirectUrl = "/Home";
                 }
@@ -79,6 +79,8 @@ namespace AgendamentoAPI.EndPoints
                 });
             });
 
+
+
             groupBuilder.MapGet("GetRoles/{emailOrUserName}", async ([FromServices] UserManager<PessoaComAcesso> userManager, string emailOrUserName) =>
             {
                 var user = await userManager.FindByEmailAsync(emailOrUserName);
@@ -107,13 +109,13 @@ namespace AgendamentoAPI.EndPoints
                 return Results.Ok(new { userName = user.UserName });
             });
 
-            groupBuilder.MapGet("manage/info", async (HttpContext context) =>
+            groupBuilder.MapGet("user/information", async (HttpContext context) =>
             {
                 var userManager = context.RequestServices.GetRequiredService<UserManager<PessoaComAcesso>>();
                 var user = await userManager.GetUserAsync(context.User);
                 if (user == null)
                 {
-                    return Results.Ok();
+                    return Results.NotFound(new { message = "Usuário não encontrado." });
                 }
 
                 var roles = await userManager.GetRolesAsync(user);
@@ -127,9 +129,20 @@ namespace AgendamentoAPI.EndPoints
                 };
 
                 return Results.Ok(userInfo);
+            }).RequireAuthorization();
+
+            groupBuilder.MapGet("autenticado", async (HttpContext context) =>
+            {
+                if (context.User.Identity.IsAuthenticated)
+                {
+                    await context.Response.WriteAsJsonAsync(new { Status = "Autenticado", User = context.User.Identity.Name });
+                }
+                else
+                {
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    await context.Response.WriteAsJsonAsync(new { Status = "Não autenticado" });
+                }
             });
-
-
         }
     }
 }
