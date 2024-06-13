@@ -14,11 +14,10 @@ namespace AgendamentosWEB.Services
         private readonly ILocalStorageService _localStorageService;
         private bool autenticado = false;
 
-        public LoginAPI(IHttpClientFactory factory, ILogger<LoginAPI> logger, ILocalStorageService localStorageService)
+        public LoginAPI(IHttpClientFactory factory, ILogger<LoginAPI> logger)
         {
             _httpClient = factory.CreateClient("API");
             _logger = logger;
-            _localStorageService = localStorageService;
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -32,7 +31,7 @@ namespace AgendamentosWEB.Services
                 var info = await response.Content.ReadFromJsonAsync<InfoPessoaResponse>();
                 Claim[] dados =
                 [
-                    new Claim(ClaimTypes.Name, info.Email),
+                    new Claim(ClaimTypes.Name, info.UserName),
                 new Claim(ClaimTypes.Email, info.Email)
                 ];
 
@@ -44,39 +43,39 @@ namespace AgendamentosWEB.Services
             return new AuthenticationState(pessoa);
         }
 
-        public async Task<bool> VerificaAutenticado()
-          {
-              await GetAuthenticationStateAsync();
-              return autenticado;
-          } 
-
-        public async Task<LoginResponse> LoginAsync(string email, string password)
+        public async Task<LoginResponse> LoginAsync(string email, string senha)
         {
-            var response = await _httpClient.PostAsJsonAsync("auth/login", new { Email = email, Password = password });
+            var response = await _httpClient.PostAsJsonAsync("auth/Login", new
+            {
+                email,
+                password = senha
+            });
+
             if (response.IsSuccessStatusCode)
             {
-                var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
-                if (loginResponse != null && !string.IsNullOrEmpty(loginResponse.Token))
-                {
-                    await _localStorageService.SetItemAsync("authToken", loginResponse.Token);
-                    NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
-                    return new LoginResponse { Sucesso = true };
-                }
+                NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+                return new LoginResponse { Sucesso = true };
             }
 
-            return new LoginResponse { Sucesso = false };
+            return new LoginResponse { Sucesso = false, Erros = ["Login/senha inválidos"] };
         }
 
         public async Task LogoutAsync()
         {
-            await _localStorageService.RemoveItemAsync("authToken");
-            _httpClient.DefaultRequestHeaders.Authorization = null;
+            await _httpClient.PostAsync("auth/logout", null);
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
 
+        public async Task<bool> VerificaAutenticado()
+        {
+            await GetAuthenticationStateAsync();
+            return autenticado;
+        }
+    
 
 
-        public async Task<List<string>> GetUserRolesAsync(string emailOrUserName)
+
+    public async Task<List<string>> GetUserRolesAsync(string emailOrUserName)
         {
             try
             {

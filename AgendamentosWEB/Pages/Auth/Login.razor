@@ -66,15 +66,9 @@
         var resposta = await loginAPI.LoginAsync(loginData.Email, loginData.Senha);
         if (resposta.Sucesso)
         {
-            // Aqui armazena o token 
-            var tokenAsString = string.Join(",", resposta.Token);
-            await JS.InvokeVoidAsync("localStorage.setItem", "MeuCookieJWT", tokenAsString);
+            
 
-            // Recupere o nome de usuário
-            var userName = await loginAPI.GetUserNameAsync(loginData.Email);
-
-            // Recupere as funções do usuário
-            var roles = await loginAPI.GetUserRolesAsync(userName!);
+           
 
             //Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
 

@@ -8,6 +8,8 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 
 namespace AgendamentoAPI.EndPoints
 {
@@ -18,7 +20,10 @@ namespace AgendamentoAPI.EndPoints
             var groupBuilder = app.MapGroup("auth")
                 .WithTags("Autenticação");
 
-            groupBuilder.MapPost("Login", async ([FromServices] UserManager<PessoaComAcesso> userManager, [FromServices] SignInManager<PessoaComAcesso> signInManager, [FromBody] LoginRequest loginRequest, IConfiguration _config) =>
+            groupBuilder.MapPost("Login", async ([FromServices] UserManager<PessoaComAcesso> userManager,
+                                      [FromServices] SignInManager<PessoaComAcesso> signInManager,
+                                      [FromBody] LoginRequest loginRequest,
+                                      [FromServices] IConfiguration _config) =>
             {
                 var user = await userManager.FindByEmailAsync(loginRequest.Email);
                 if (user == null)
@@ -48,34 +53,33 @@ namespace AgendamentoAPI.EndPoints
                     redirectUrl = "/";
                 }
 
-                // Geração do Token JWT
-                var claims = new[]
-                {
-                    new Claim(JwtRegisteredClaimNames.Sub, user.Email!),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                // Crie as claims do usuário
+                var claims = new List<Claim>
+                 {
+                 new Claim(ClaimTypes.Name, user.UserName),
+                  new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
                 };
 
-                var jwtKey = _config["Jwt:Key"];
-                if (jwtKey == null)
+                // Adicione as roles às claims
+                foreach (var role in roles)
                 {
-                    throw new ArgumentNullException(nameof(jwtKey), "JwtKey cannot be null.");
+                    claims.Add(new Claim(ClaimTypes.Role, role));
                 }
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
-                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                // Crie a identidade do usuário e defina os cookies de autenticação
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var authProperties = new AuthenticationProperties
+                {
+                    IsPersistent = false,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1) // Defina o tempo de expiração conforme necessário
+                };
 
-                var token = new JwtSecurityToken(
-                    _config["Jwt:Issuer"],
-                    _config["Jwt:Issuer"],
-                    claims,
-                    expires: DateTime.Now.AddDays(1), // Aumentar validade para 1 dia
-                    signingCredentials: creds);
+                await signInManager.Context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
 
                 return Results.Ok(new
                 {
-                    token = new JwtSecurityTokenHandler().WriteToken(token),
-                    redirectUrl,
-                    expiration = token.ValidTo // Inclui o tempo de expiração
+                    message = "Autenticação bem-sucedida.",
+                    redirectUrl
                 });
             });
 

@@ -6,10 +6,11 @@ using Agendamentos.Shared.Dados.Modelos;
 using Agendamentos.Shared.Modelos.Modelos;
 using AgendamentosAPI.Shared.Dados.Database;
 using AgendamentosAPI.Shared.Models.Modelos;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -32,27 +33,22 @@ builder.Services.AddLogging();
 builder.Services.AddScoped(typeof(DAL<>));
 builder.Services.AddScoped<AgendamentoService>();
 
-// Configuração do JWT Authentication
-var issuer = builder.Configuration["Jwt:Issuer"];
-var key = builder.Configuration["Jwt:Key"];
-if (issuer == null || key == null)
+// Configuração do Cookie Authentication
+builder.Services.ConfigureApplicationCookie(options =>
 {
-    throw new Exception("Jwt:Issuer and Jwt:Key must be defined in the configuration.");
-}
+    options.Cookie.HttpOnly = true;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+    options.LoginPath = "/auth/login"; // Caminho para a página de login
+    options.AccessDeniedPath = "/auth/access-denied"; // Caminho para a página de acesso negado
+    options.SlidingExpiration = true;
+});
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = issuer,
-            ValidAudience = issuer,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
-        };
+        options.Cookie.Name = "YourAppCookie";
+        options.LoginPath = "/auth/login";
+        options.LogoutPath = "/auth/logout";
     });
 
 builder.Services.Configure<IdentityOptions>(options =>
@@ -120,14 +116,11 @@ app.AddEndPointsCadastro();
 app.AddEndPoinsLogin();
 
 // Endpoint de Logout
-app.MapPost("auth/logout", async ([FromServices] SignInManager<PessoaComAcesso> signInManager, [FromServices] IHttpContextAccessor httpContextAccessor) =>
+app.MapPost("auth/logout", async ([FromServices] SignInManager<PessoaComAcesso> signInManager) =>
 {
     await signInManager.SignOutAsync();
-    httpContextAccessor.HttpContext?.Response.Cookies.Delete(".AspNetCore.Identity.Application");
-    return Results.Ok(new { message = "Logout successful" });
-}).WithTags("Autenticação");
-
-
+    return Results.Ok();
+}).RequireAuthorization().WithTags("Autorização");
 
 // Configuração do Swagger
 app.UseSwagger();
