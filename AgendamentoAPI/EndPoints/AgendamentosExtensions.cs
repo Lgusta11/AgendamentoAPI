@@ -1,8 +1,6 @@
 ﻿using AgendamentoAPI.Requests;
 using AgendamentoAPI.Response;
-using AgendamentoAPI.Response.Convert;
 using Agendamentos.Shared.Dados.Database;
-using Agendamentos.Shared.Dados.Modelos;
 using Agendamentos.Shared.Modelos.Modelos;
 using AgendamentosAPI.Shared.Dados.Database;
 using AgendamentosAPI.Shared.Models.Modelos;
@@ -14,44 +12,48 @@ namespace Agendamentos.EndPoints
     public static class AgendamentosExtensions
     {
 
-       
+
         public static void AddEndPointsAgendamentos(this WebApplication app)
         {
             var groupBuilder = app.MapGroup("agendamentos")
                 .WithTags("Agendamentos");
 
-            groupBuilder.MapGet("", async ([FromServices] AgendamentoService agendamentoService) =>
+            groupBuilder.MapGet("", [Authorize(Roles = "Gestor")] async ([FromServices] AgendamentoService agendamentoService) =>
+             {
+                 var listaDeAgendamentos = agendamentoService.ListarAgendamentos();
+
+                 if (listaDeAgendamentos is null || !listaDeAgendamentos.Any())
+                 {
+                     return Results.Ok("Nenhum agendamento encontrado.");
+                 }
+
+                 var listaDeAgendamentosResponse = new List<AgendamentoResponse>();
+
+                 foreach (var agendamento in listaDeAgendamentos)
+                 {
+                     foreach (var aulaAgendada in agendamento.AgendamentoAulas)
+                     {
+                         var agendamentoResponse = new AgendamentoResponse(
+                             agendamento.Id,
+                             agendamento.Data,
+                             aulaAgendada.Aula?.Aula,
+                             agendamento.Equipamento?.Nome,
+                             agendamento.Professor?.UserName
+                         );
+                         listaDeAgendamentosResponse.Add(agendamentoResponse);
+                     }
+                 }
+                 return Results.Ok(listaDeAgendamentosResponse);
+
+             });
+
+
+            groupBuilder.MapGet("{professorId}", async ([FromServices] AgendamentoService agendamentoService, string professorId) =>
             {
-                var listaDeAgendamentos = agendamentoService.ListarAgendamentos();
-                if (listaDeAgendamentos is null || !listaDeAgendamentos.Any())
-                {
-                    return Results.Ok("Nenhum agendamento encontrado.");
-                }
+                var agendamentosDoProfessor = agendamentoService.
+                ListarAgendamentos()
+                .Where(a => a.Professor.Id == professorId);
 
-                var listaDeAgendamentosResponse = new List<AgendamentoResponse>();
-                foreach (var agendamento in listaDeAgendamentos)
-                {
-                    foreach (var aulaAgendada in agendamento.AgendamentoAulas)
-                    {
-                        var agendamentoResponse = new AgendamentoResponse(
-                            agendamento.Id,
-                            agendamento.Data,
-                            aulaAgendada.Aula?.Aula,
-                            agendamento.Equipamento?.Nome,
-                            agendamento.Professor?.Nome
-                        );
-                        listaDeAgendamentosResponse.Add(agendamentoResponse);
-                    }
-                }
-                return Results.Ok(listaDeAgendamentosResponse);
-            }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
-
-
-
-
-            groupBuilder.MapGet("{professorId}", async ([FromServices] AgendamentoService agendamentoService, int professorId) =>
-            {
-                var agendamentosDoProfessor = agendamentoService.ListarAgendamentos().Where(a => a.ProfessorId == professorId);
                 if (agendamentosDoProfessor is null || !agendamentosDoProfessor.Any())
                 {
                     return Results.Ok($"Nenhum agendamento encontrado para o professor com ID {professorId}.");
@@ -67,7 +69,7 @@ namespace Agendamentos.EndPoints
                             agendamento.Data,
                             aulaAgendada.Aula?.Aula,
                             agendamento.Equipamento?.Nome,
-                            agendamento.Professor?.Nome
+                            agendamento.Professor?.UserName
                         );
                         listaDeAgendamentosResponse.Add(agendamentoResponse);
                     }
@@ -80,8 +82,8 @@ namespace Agendamentos.EndPoints
             groupBuilder.MapPost("", async (
        [FromServices] DAL<Agendamento> dal,
        [FromServices] DAL<Equipamentos> EquipamentosDal,
-       [FromBody] AgendamentoRequest agendamentoRequest,
-       [FromServices] PessoaComAcesso user) =>
+       [FromBody] AgendamentoRequest agendamentoRequest
+      ) =>
             {
                 if (agendamentoRequest == null)
                 {
@@ -155,8 +157,7 @@ namespace Agendamentos.EndPoints
 
             groupBuilder.MapDelete("{id}", (
                 [FromServices] DAL<Agendamento> dal,
-                int id,
-                [FromServices] PessoaComAcesso user) =>
+                int id) =>
             {
                 var agendamento = dal.RecuperarPor(a => a.Id == id);
                 if (agendamento is null)

@@ -15,18 +15,19 @@ namespace Agendamentos.EndPoints
                 var groupBuilder = app.MapGroup("equipamentos")
                 .WithTags("Equipamentos");
 
-                groupBuilder.MapGet("", ([FromServices] DAL<Equipamentos> dal) =>
-                {
-                    var listaDeEquipamentos = dal.Listar();
-                    if (listaDeEquipamentos is null)
-                    {
-                        return Results.Ok(new { Info = "Nenhum equipamento encontrado!" });
-                    }
-                    var listaDeEquipamentosResponse = listaDeEquipamentos.Select(e => new EquipamentoResponse(e.Id, e.Nome, e.Quantidade)).ToList();
-                    return Results.Ok(listaDeEquipamentosResponse);
-                });
 
-                groupBuilder.MapGet("{id}", ([FromServices] DAL<Equipamentos> dal, int id) =>
+            groupBuilder.MapGet("",[Authorize] ([FromServices] DAL<Equipamentos> dal) =>
+            {
+                var listaDeEquipamentos = dal.Listar();
+                if (listaDeEquipamentos is null)
+                {
+                    return Results.Ok(new { Info = "Nenhum equipamento encontrado!" });
+                }
+                var listaDeEquipamentosResponse = listaDeEquipamentos.Select(e => new EquipamentoResponse(e.Id, e.Nome, e.Quantidade)).ToList();
+                return Results.Ok(listaDeEquipamentosResponse);
+            });
+
+                groupBuilder.MapGet("{id}",[Authorize] ([FromServices] DAL<Equipamentos> dal, int id) =>
                 {
                     var equipamento = dal.RecuperarPor(e => e.Id == id);
                     if (equipamento is null)
@@ -36,24 +37,25 @@ namespace Agendamentos.EndPoints
                     return Results.Ok(new EquipamentoResponse(equipamento.Id, equipamento.Nome, equipamento.Quantidade));
                 });
 
-                groupBuilder.MapPost("", ([FromServices] DAL<Equipamentos> dal, [FromBody] EquipamentoRequest equipamentoRequest) =>
+            groupBuilder.MapPost("", [Authorize(Roles = "Gestor")] ([FromServices] DAL<Equipamentos> dal, [FromBody] EquipamentoRequest equipamentoRequest) =>
+            {
+                var equipamento = new Equipamentos(equipamentoRequest.Nome) { Quantidade = equipamentoRequest.Quantidade };
+                dal.Adicionar(equipamento);
+                return Results.Ok();
+            });
+
+            groupBuilder.MapDelete("{id}",[Authorize(Roles = "Gestor")] ([FromServices] DAL<Equipamentos> dal, int id) =>
+            {
+                var equipamento = dal.RecuperarPor(e => e.Id == id);
+                if (equipamento is null)
                 {
-                    var equipamento = new Equipamentos(equipamentoRequest.Nome) { Quantidade = equipamentoRequest.Quantidade };
-                    dal.Adicionar(equipamento);
-                    return Results.Ok();
-                }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
+                    return Results.NotFound();
+                }
+                dal.Deletar(equipamento);
+                return Results.NoContent();
+            });
 
-                groupBuilder.MapDelete("{id}", ([FromServices] DAL<Equipamentos> dal, int id) => {
-                    var equipamento = dal.RecuperarPor(e => e.Id == id);
-                    if (equipamento is null)
-                    {
-                        return Results.NotFound();
-                    }
-                    dal.Deletar(equipamento);
-                    return Results.NoContent();
-                }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
-
-            groupBuilder.MapPut("{id}", ([FromServices] DAL<Equipamentos> dal, [FromBody] EquipamentosRequestEdit equipamentoRequest) =>
+            groupBuilder.MapPut("{id}",[Authorize(Roles = "Gestor")] ([FromServices] DAL<Equipamentos> dal, [FromBody] EquipamentosRequestEdit equipamentoRequest) =>
             {
                 var equipamentoAAtualizar = dal.RecuperarPor(e => e.Id == equipamentoRequest.Id);
                 if (equipamentoAAtualizar is null)

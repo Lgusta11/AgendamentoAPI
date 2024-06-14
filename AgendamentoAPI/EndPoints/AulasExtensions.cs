@@ -15,7 +15,7 @@ namespace Agendamentos.EndPoints
             .WithTags("Aulas");
 
             #region Endpoint Aulas
-            groupBuilder.MapGet("", ([FromServices] DAL<Aulas> dal) =>
+            groupBuilder.MapGet("",[Authorize] ([FromServices] DAL<Aulas> dal) =>
             {
                 var listaDeAulas = dal.Listar();
                 if (listaDeAulas is null)
@@ -26,7 +26,7 @@ namespace Agendamentos.EndPoints
                 return Results.Ok(listaDeAulasResponse);
             });
 
-            groupBuilder.MapGet("{id}", ([FromServices] DAL<Aulas> dal, int id) =>
+            groupBuilder.MapGet("{id}",[Authorize] ([FromServices] DAL<Aulas> dal, int id) =>
             {
                 var aula = dal.RecuperarPor(a => a.Id == id);
                 if (aula is null)
@@ -36,7 +36,7 @@ namespace Agendamentos.EndPoints
                 return Results.Ok(EntityToResponse(aula));
             });
 
-            groupBuilder.MapPost("", ([FromServices] DAL<Aulas> dal, [FromBody] AulasRequest aulasRequest) =>
+            groupBuilder.MapPost("", [Authorize(Roles = "Gestor")] ([FromServices] DAL<Aulas> dal, [FromBody] AulasRequest aulasRequest) =>
             {
                 var aulaExistente = dal.RecuperarPor(a => a.Aula == aulasRequest.Aula);
                 if (aulaExistente != null)
@@ -53,9 +53,10 @@ namespace Agendamentos.EndPoints
                 var aula = new Aulas(aulasRequest.Aula) { Duracao = TimeSpan.FromMinutes(50) };
                 dal.Adicionar(aula);
                 return Results.Ok();
-            }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
+            });
 
-            groupBuilder.MapDelete("{id}", ([FromServices] DAL<Aulas> dal, int id) => {
+            groupBuilder.MapDelete("{id}", [Authorize(Roles = "Gestor")] ([FromServices] DAL<Aulas> dal, int id) =>
+            {
                 var aula = dal.RecuperarPor(a => a.Id == id);
                 if (aula is null)
                 {
@@ -63,9 +64,10 @@ namespace Agendamentos.EndPoints
                 }
                 dal.Deletar(aula);
                 return Results.NoContent();
-            }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
+            });
 
-            groupBuilder.MapPut("", ([FromServices] DAL<Aulas> dal, [FromBody] AulasRequestEdit aulasRequestEdit) => {
+            groupBuilder.MapPut("", [Authorize(Roles = "Gestor")] ([FromServices] DAL<Aulas> dal, [FromBody] AulasRequestEdit aulasRequestEdit) =>
+            {
                 var aulaAAtualizar = dal.RecuperarPor(a => a.Id == aulasRequestEdit.Id);
                 if (aulaAAtualizar is null)
                 {
@@ -74,7 +76,7 @@ namespace Agendamentos.EndPoints
                 aulaAAtualizar.Aula = aulasRequestEdit.Aula;
                 dal.Atualizar(aulaAAtualizar);
                 return Results.Ok();
-            }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
+            });
             #endregion
         }
 

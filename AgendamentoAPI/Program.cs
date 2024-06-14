@@ -1,17 +1,15 @@
+using AgendamentoAPI;
+using AgendamentoAPI.Auth;
 using AgendamentoAPI.EndPoints;
-using AgendamentoAPI.EndPoints.AdminCrud;
 using Agendamentos.EndPoints;
 using Agendamentos.Shared.Dados.Database;
-using Agendamentos.Shared.Dados.Modelos;
-using Agendamentos.Shared.Modelos.Modelos;
+using AgendamentosAPI.Shared.Dados;
 using AgendamentosAPI.Shared.Dados.Database;
-using AgendamentosAPI.Shared.Models.Modelos;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+using AgendamentosAPI.Shared.Dados.Database.Auth;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -21,60 +19,74 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AgendamentosContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<PessoaComAcesso>();
-builder.Services.AddIdentity<PessoaComAcesso, Admin>()
-    .AddEntityFrameworkStores<AgendamentosContext>()
-    .AddRoleManager<RoleManager<Admin>>()
-    .AddDefaultTokenProviders();
 
 builder.Services.AddHostedService<CleanupService>();
 
 builder.Services.AddLogging();
 builder.Services.AddScoped(typeof(DAL<>));
 builder.Services.AddScoped<AgendamentoService>();
-
-// Configuração do Cookie Authentication
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.Cookie.HttpOnly = true;
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-    options.LoginPath = "/auth/login"; // Caminho para a página de login
-    options.AccessDeniedPath = "/auth/access-denied"; // Caminho para a página de acesso negado
-    options.SlidingExpiration = true;
-});
-
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.Cookie.Name = "YourAppCookie";
-        options.LoginPath = "/auth/login";
-        options.LogoutPath = "/auth/logout";
-    });
-
-builder.Services.Configure<IdentityOptions>(options =>
-{
-    // Configurações do usuário
-    options.User.AllowedUserNameCharacters =
-        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ ";
-    options.User.RequireUniqueEmail = true;
-
-    // Configurações de senha
-    options.Password.RequireDigit = true;
-    options.Password.RequiredLength = 8;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase = true;
-    options.Password.RequireLowercase = true;
-});
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<ProfessorService>();
+builder.Services.AddScoped<NiveisdeAcessoService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 // Configuração do Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(opt =>
+{
+    opt.SwaggerDoc("v1", new OpenApiInfo { Title = "SistemaAFS", Version = "v1" });
+    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "bearer"
+    });
+
+    opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            },
+            new string[]{}
+        }
+    });
+});
 
 // Configuração do JSON Serializer
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(
     options => options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 builder.Services.AddAuthorization();
+
+var key = Encoding.ASCII.GetBytes(Settings.Secret);
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(x =>
+{
+    x.RequireHttpsMetadata = false;
+    x.SaveToken = true;
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+});
+
 
 // Configuração do CORS
 builder.Services.AddCors(
@@ -98,29 +110,18 @@ app.UseAuthorization();
 // Obtenha uma instância do RoleManager
 using var serviceScope = app.Services.CreateScope();
 var serviceProvider = serviceScope.ServiceProvider;
-var roleManager = serviceProvider.GetRequiredService<RoleManager<Admin>>();
 
-// Verifique se a função "Professores" existe, se não, crie-a
-if (!roleManager.RoleExistsAsync("Professores").Result)
-{
-    var roleResult = roleManager.CreateAsync(new Admin { Name = "Professores" }).Result;
-}
 
 // Adição dos Endpoints
 app.AddEndPointsProfessores();
 app.AddEndPointsAulas();
 app.AddEndPointsEquipamentos();
 app.AddEndPointsAgendamentos();
-app.AddEndPointsAdmin();
 app.AddEndPointsCadastro();
 app.AddEndPoinsLogin();
+app.AddEndPoinsUsers();
 
-// Endpoint de Logout
-app.MapPost("auth/logout", async ([FromServices] SignInManager<PessoaComAcesso> signInManager) =>
-{
-    await signInManager.SignOutAsync();
-    return Results.Ok();
-}).RequireAuthorization().WithTags("Autorização");
+
 
 // Configuração do Swagger
 app.UseSwagger();

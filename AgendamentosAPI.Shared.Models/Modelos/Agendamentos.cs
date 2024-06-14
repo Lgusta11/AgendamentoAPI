@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 
 namespace Agendamentos.Shared.Modelos.Modelos
 {
-
-   
     public class Agendamento
     {
 
@@ -18,14 +16,18 @@ namespace Agendamentos.Shared.Modelos.Modelos
         }
 
         public int Id { get; set; }
+
         public DateTime Data { get; set; }
+
         public int EquipamentoId { get; set; }
+
         public virtual Equipamentos? Equipamento { get; set; }
-        public int ProfessorId { get; set; }
-        public virtual Professores? Professor { get; set; }
 
+        public string ProfessorId { get; set; }
 
-        public virtual ICollection<AgendamentoAula> AgendamentoAulas { get; set; }
+        public virtual User? Professor { get; set; }
+
+        public virtual ICollection<AgendamentoAula>? AgendamentoAulas { get; set; }
 
     }
 

@@ -1,23 +1,19 @@
-﻿using Agendamentos.Shared.Dados.Modelos;
-using Agendamentos.Shared.Modelos.Modelos;
+﻿using Agendamentos.Shared.Modelos.Modelos;
 using AgendamentosAPI.Shared.Models.Modelos;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Linq;
 
 namespace Agendamentos.Shared.Dados.Database
 {
-    public class AgendamentosContext : IdentityDbContext<PessoaComAcesso, Admin, int>
+    public class AgendamentosContext : DbContext
     {
-        public DbSet<Professores> Professores { get; set; }
         public DbSet<Equipamentos> Equipamentos { get; set; }
         public DbSet<Agendamento> Agendamentos { get; set; }
         public DbSet<Aulas> Aulas { get; set; }
         public DbSet<AgendamentoAula> AgendamentoAulas { get; set; }
+        public DbSet<NivelAcesso> NivelAcessos{ get; set; }
+        public DbSet<User> Users{ get; set; }
 
         private readonly IConfiguration _configuration;
 
@@ -44,22 +40,29 @@ namespace Agendamentos.Shared.Dados.Database
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configurações para Identity
-            modelBuilder.Entity<Admin>()
-                .HasIndex(a => a.Email)
-                .IsUnique();
+            var nivelAcessoId = Guid.NewGuid().ToString();
+            var usuarioId = Guid.NewGuid().ToString();
 
-            modelBuilder.Entity<IdentityUserRole<int>>()
-                .HasKey(ur => new { ur.UserId, ur.RoleId });
+            modelBuilder.Entity<User>().HasKey(p => p.Id);
+            modelBuilder.Entity<NivelAcesso>().HasKey(p => p.Id);
 
-            modelBuilder.Entity<IdentityUserLogin<int>>()
-                .HasKey(l => new { l.LoginProvider, l.ProviderKey });
+            modelBuilder.Entity<NivelAcesso>()
+                .HasData(new NivelAcesso(nivelAcessoId,"Gestor"));
 
-            modelBuilder.Entity<IdentityUserToken<int>>()
-                .HasKey(ut => new { ut.UserId, ut.LoginProvider, ut.Name });
+            modelBuilder.Entity<User>()
+                .HasData(new User(usuarioId,"root","root@gmail.com","Soeuseisoeusei",nivelAcessoId));
+
+            modelBuilder.Entity<User>()
+                .HasOne(p => p.NivelAcesso)
+                .WithMany(p => p.Users)
+                .HasForeignKey(p => p.AcessoId)
+                .HasConstraintName("FK_User_Acesso")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
 
             // Configurações para entidades personalizadas
-            modelBuilder.Entity<Professores>().HasKey(p => p.Id);
+
             modelBuilder.Entity<Equipamentos>().HasKey(e => e.Id);
             modelBuilder.Entity<Aulas>().HasKey(a => a.Id);
             modelBuilder.Entity<Agendamento>().HasKey(a => a.Id);
