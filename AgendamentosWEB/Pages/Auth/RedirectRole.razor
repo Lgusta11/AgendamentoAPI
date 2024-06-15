@@ -26,11 +26,11 @@
                 roles = rolesInfo.NivelAcesso;
             }
 
-            if (roles.Equals("Admin"))
+            if (roles.Equals("Gestor"))
             {
                 Navigation.NavigateTo("/admin/home");
             }
-            else if (roles.Equals("Professores"))
+            else if (roles.Equals("Professor"))
             {
                 Navigation.NavigateTo("/home");
             }

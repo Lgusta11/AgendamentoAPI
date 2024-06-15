@@ -19,6 +19,11 @@ builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStatePr
 builder.Services.AddScoped(sp => (ApiAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());
 
 builder.Services.AddScoped<LoginAPI>();
+builder.Services.AddScoped<AgendamentosWEB.Services.AgendamentosAPI>();
+builder.Services.AddScoped<CadastroAPI>();
+builder.Services.AddScoped<EquipamentosAPI>();
+builder.Services.AddScoped<ProfessoresAPI>();
+builder.Services.AddScoped<AulasAPI>();
 
 builder.Services.AddMudServices();
 builder.Services.AddRadzenComponents();
