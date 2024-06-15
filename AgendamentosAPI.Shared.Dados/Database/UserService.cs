@@ -39,5 +39,11 @@ namespace AgendamentosAPI.Shared.Dados.Database
 
             return user;
         }
+
+        public async Task AlterarUsuario(User user)
+        {
+            _agendamentoContext.Entry(user).State = EntityState.Modified;
+            await _agendamentoContext.SaveChangesAsync();
+        }
     }
 }

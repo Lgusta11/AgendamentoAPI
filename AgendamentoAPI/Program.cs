@@ -16,9 +16,11 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure the DbContext with the connection string from appsettings.json
+
 builder.Services.AddDbContext<AgendamentosContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddDbContext<AgendamentosContext>();
 
 builder.Services.AddHostedService<CleanupService>();
 
@@ -107,9 +109,13 @@ app.UseCors("wasm");
 app.UseAuthentication();
 app.UseAuthorization();
 
+/*
+
 // Obtenha uma instância do RoleManager
 using var serviceScope = app.Services.CreateScope();
 var serviceProvider = serviceScope.ServiceProvider;
+
+*/
 
 
 // Adição dos Endpoints

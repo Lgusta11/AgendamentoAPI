@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
 
 namespace AgendamentosWEB.Services
 {
@@ -12,12 +14,15 @@ namespace AgendamentosWEB.Services
         private readonly HttpClient _httpClient;
         private readonly ILogger<LoginAPI> _logger;
         private readonly ILocalStorageService _localStorageService;
-        private bool autenticado = false;
+        private readonly AuthenticationStateProvider _authenticationStateProvider;
 
-        public LoginAPI(IHttpClientFactory factory, ILogger<LoginAPI> logger)
+        public LoginAPI(IHttpClientFactory factory, ILogger<LoginAPI> logger,ILocalStorageService localStorageService,AuthenticationStateProvider authenticationStateProvider)
         {
             _httpClient = factory.CreateClient("API");
             _logger = logger;
+            _localStorageService = localStorageService;
+            _authenticationStateProvider = authenticationStateProvider;
+
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -45,19 +50,29 @@ namespace AgendamentosWEB.Services
 
         public async Task<LoginResponse> LoginAsync(string email, string senha)
         {
-            var response = await _httpClient.PostAsJsonAsync("auth/Login", new
+            StringContent crendetials = new(JsonSerializer.Serialize(new
             {
                 email,
-                password = senha
-            });
+                senha
+            }),
+            Encoding.UTF8,
+            "application/json");
 
-            if (response.IsSuccessStatusCode)
+            var request = await _httpClient.PostAsync("auth/Login", crendetials);
+
+            if (!request.IsSuccessStatusCode)
             {
-                NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
-                return new LoginResponse { Sucesso = true };
+                return new LoginResponse { Sucesso = false, Erros = ["Login/senha inválidos"] };
             }
 
-            return new LoginResponse { Sucesso = false, Erros = ["Login/senha inválidos"] };
+            var response = await request.Content.ReadFromJsonAsync<AuthResponse>();
+
+            await _localStorageService.SetItemAsync("AuthToken", response!.Token);
+
+            ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsAuthenticated(response.Token);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", response.Token);
+
+            return new LoginResponse { Sucesso = true };
         }
 
         public async Task LogoutAsync()
@@ -71,11 +86,9 @@ namespace AgendamentosWEB.Services
             await GetAuthenticationStateAsync();
             return autenticado;
         }
-    
 
 
-
-    public async Task<List<string>> GetUserRolesAsync(string emailOrUserName)
+        public async Task<List<string>> GetUserRolesAsync(string emailOrUserName)
         {
             try
             {
