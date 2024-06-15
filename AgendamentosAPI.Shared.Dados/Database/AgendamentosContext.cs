@@ -12,8 +12,8 @@ namespace Agendamentos.Shared.Dados.Database
         public DbSet<Agendamento> Agendamentos { get; set; }
         public DbSet<Aulas> Aulas { get; set; }
         public DbSet<AgendamentoAula> AgendamentoAulas { get; set; }
-        public DbSet<NivelAcesso> NivelAcessos{ get; set; }
-        public DbSet<User> Users{ get; set; }
+        public DbSet<NivelAcesso> NivelAcessos { get; set; }
+        public DbSet<User> Users { get; set; }
 
         private readonly IConfiguration _configuration;
 
@@ -22,12 +22,15 @@ namespace Agendamentos.Shared.Dados.Database
         {
             _configuration = configuration;
         }
-
+       
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                string connectionString = _configuration.GetConnectionString("DefaultConnection");
+
+                string connectionString =
+                 _configuration.GetConnectionString("DefaultConnection");
+                   
 
                 optionsBuilder
                     .UseNpgsql(connectionString)
@@ -47,10 +50,10 @@ namespace Agendamentos.Shared.Dados.Database
             modelBuilder.Entity<NivelAcesso>().HasKey(p => p.Id);
 
             modelBuilder.Entity<NivelAcesso>()
-                .HasData(new NivelAcesso(nivelAcessoId,"Gestor"));
+                .HasData(new NivelAcesso(nivelAcessoId, "Gestor"));
 
             modelBuilder.Entity<User>()
-                .HasData(new User(usuarioId,"root","root@gmail.com","Soeuseisoeusei",nivelAcessoId));
+                .HasData(new User(usuarioId, "root", "root@gmail.com", "Soeuseisoeusei", nivelAcessoId));
 
             modelBuilder.Entity<User>()
                 .HasOne(p => p.NivelAcesso)

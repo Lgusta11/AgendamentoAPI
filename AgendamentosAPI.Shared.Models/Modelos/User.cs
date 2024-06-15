@@ -1,9 +1,4 @@
 ﻿using Agendamentos.Shared.Modelos.Modelos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AgendamentosAPI.Shared.Models.Modelos
 {
@@ -14,6 +9,7 @@ namespace AgendamentosAPI.Shared.Models.Modelos
         public string? Email { get; private set; }
         public string? Senha { get; private set; }
         public string? AcessoId { get; private set; }
+        public string? Token { get; set; }
         public NivelAcesso? NivelAcesso { get; set; }
         public ICollection<Agendamento>? Agendamentos { get; set; }
 
@@ -28,6 +24,15 @@ namespace AgendamentosAPI.Shared.Models.Modelos
             Email = email;
             Senha = senha;
             AcessoId = acessoId;
+        }
+
+        public void AdicionarToken(string token)
+        {
+            Token = token;
+        }
+        public void AlterarToken(string token)
+        {
+            Token = token;
         }
     }
 }
