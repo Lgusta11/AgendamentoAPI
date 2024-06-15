@@ -1,4 +1,5 @@
 ﻿using Agendamentos.Shared.Modelos.Modelos;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AgendamentosAPI.Shared.Models.Modelos
 {

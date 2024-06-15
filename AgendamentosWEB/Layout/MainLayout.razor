@@ -56,7 +56,7 @@
 
     private async Task Logout()
     {
-        if (AuthenticationStateProvider is LoginAPI authAPI)
+        if (AuthenticationStateProvider is ApiAuthenticationStateProvider authAPI)
         {
             await authAPI.LogoutAsync();
             NavigationManager!.NavigateTo("/auth/login");

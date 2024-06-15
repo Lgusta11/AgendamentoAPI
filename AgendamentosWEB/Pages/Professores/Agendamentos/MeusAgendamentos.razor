@@ -63,10 +63,6 @@ else
 
 }
     
-
-
-
-
 @code {
     private ICollection<AgendamentoResponse>? agendamentos;
     private int currentPage = 1;
@@ -78,7 +74,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var userInfo = await loginAPI.GetUserInfoAsync();
+        var userInfo = await loginAPI.GetUserRolesAsync();
         if (userInfo != null)
         {
             var userName = userInfo.UserName;
@@ -117,7 +113,7 @@ else
         {
             await agendamentosAPI.DeleteAgendamentoAsync(id);
             // Atualize a lista de agendamentos após a exclusão
-            var userInfo = await loginAPI.GetUserInfoAsync();
+            var userInfo = await loginAPI.GetUserRolesAsync();
             if (userInfo != null)
             {
                 var userName = userInfo.UserName;

@@ -9,22 +9,21 @@ using System.Text.Json;
 
 namespace AgendamentosWEB.Services
 {
-    public class LoginAPI : AuthenticationStateProvider
+    public class LoginAPI
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<LoginAPI> _logger;
         private readonly ILocalStorageService _localStorageService;
         private readonly AuthenticationStateProvider _authenticationStateProvider;
 
-        public LoginAPI(IHttpClientFactory factory, ILogger<LoginAPI> logger,ILocalStorageService localStorageService,AuthenticationStateProvider authenticationStateProvider)
+        public LoginAPI(IHttpClientFactory factory, ILogger<LoginAPI> logger, ILocalStorageService localStorageService, AuthenticationStateProvider authenticationStateProvider)
         {
             _httpClient = factory.CreateClient("API");
             _logger = logger;
             _localStorageService = localStorageService;
             _authenticationStateProvider = authenticationStateProvider;
-
         }
-
+        /*
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             autenticado = false;
@@ -47,8 +46,9 @@ namespace AgendamentosWEB.Services
 
             return new AuthenticationState(pessoa);
         }
+        */
 
-        public async Task<LoginResponse> LoginAsync(string email, string senha)
+        public async Task<bool> LoginAsync(string email, string senha)
         {
             StringContent crendetials = new(JsonSerializer.Serialize(new
             {
@@ -61,9 +61,7 @@ namespace AgendamentosWEB.Services
             var request = await _httpClient.PostAsync("auth/Login", crendetials);
 
             if (!request.IsSuccessStatusCode)
-            {
-                return new LoginResponse { Sucesso = false, Erros = ["Login/senha inválidos"] };
-            }
+                return false;
 
             var response = await request.Content.ReadFromJsonAsync<AuthResponse>();
 
@@ -72,44 +70,61 @@ namespace AgendamentosWEB.Services
             ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsAuthenticated(response.Token);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", response.Token);
 
-            return new LoginResponse { Sucesso = true };
+            return true;
         }
 
+        //public async Task LogoutAsync()
+        //{
+        //    await _localStorageService.RemoveItemAsync("authToken");
+        //    ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsLoggedOut();
+        //    _httpClient.DefaultRequestHeaders.Authorization = null;
+        //}
+
+        /*
         public async Task LogoutAsync()
         {
             await _httpClient.PostAsync("auth/logout", null);
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
-
+        */
+        /*
         public async Task<bool> VerificaAutenticado()
         {
             await GetAuthenticationStateAsync();
             return autenticado;
         }
-
-
-        public async Task<List<string>> GetUserRolesAsync(string emailOrUserName)
+        */
+        
+        public async Task<InfoPessoaResponse> GetUserRolesAsync()
         {
             try
             {
-                var response = await _httpClient.GetAsync($"auth/GetRoles/{emailOrUserName}");
+                var savedToken = await _localStorageService.GetItemAsync<string>("AuthToken");
 
-                if (response.IsSuccessStatusCode)
+                StringContent bodyJson = new(JsonSerializer.Serialize(new
                 {
-                    var responseObject = await response.Content.ReadFromJsonAsync<Dictionary<string, List<string>>>();
-                    return responseObject != null ? responseObject["roles"] : new List<string>();
-                }
+                    token = savedToken,
+                }),
+                Encoding.UTF8,
+                "application/json");
 
-                _logger.LogWarning("Não foi possível recuperar as funções para o usuário {EmailOrUserName}", emailOrUserName);
-                return new List<string>();
+                var requestInfo = await _httpClient.PostAsync("/auth/AutenticadoInfo", bodyJson);
+
+                if (!requestInfo.IsSuccessStatusCode)
+                    throw new Exception("Erro ao recuperar informações");
+
+                var response = await requestInfo.Content.ReadFromJsonAsync<InfoPessoaResponse>();
+
+                return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao recuperar as funções para o usuário {EmailOrUserName}", emailOrUserName);
-                return new List<string>();
+                _logger.LogError(ex, "Erro ao recuperar as funções para o usuário");
+                return new InfoPessoaResponse();
             }
         }
 
+        /*
         public async Task<string?> GetUserNameAsync(string email)
         {
             try
@@ -131,6 +146,8 @@ namespace AgendamentosWEB.Services
                 return null;
             }
         }
+        */
+        /*
         public async Task<InfoPessoaResponse?> GetUserInfoAsync()
         {
             try
@@ -150,5 +167,6 @@ namespace AgendamentosWEB.Services
                 return null;
             }
         }
+        */
     }
 }

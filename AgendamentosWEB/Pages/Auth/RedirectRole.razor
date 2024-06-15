@@ -2,11 +2,12 @@
 @attribute [AllowAnonymous]
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @inject NavigationManager Navigation
-@inject LoginAPI loginAPI
+@inject ApiAuthenticationStateProvider loginAPI
+@inject LoginAPI log
 
 @code {
     private string? email;
-    private List<string> roles = new List<string>();
+    private string roles = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -21,14 +22,15 @@
             // Recupere as funções do usuário
             if (!string.IsNullOrEmpty(email))
             {
-                roles = await loginAPI.GetUserRolesAsync(email);
+                var rolesInfo = await log.GetUserRolesAsync();
+                roles = rolesInfo.NivelAcesso;
             }
 
-            if (roles.Contains("Admin"))
+            if (roles.Equals("Admin"))
             {
                 Navigation.NavigateTo("/admin/home");
             }
-            else if (roles.Contains("Professores"))
+            else if (roles.Equals("Professores"))
             {
                 Navigation.NavigateTo("/home");
             }

@@ -110,7 +110,7 @@
         editContext = new EditContext(agendamentoModel);
         try
         {
-            var userInfo = await loginAPI.GetUserInfoAsync();
+            var userInfo = await loginAPI.GetUserRolesAsync();
             if (userInfo is not null)
             {
                 var userName = userInfo.UserName;
