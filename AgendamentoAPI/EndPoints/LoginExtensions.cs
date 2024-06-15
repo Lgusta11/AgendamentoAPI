@@ -44,11 +44,11 @@ namespace AgendamentoAPI.EndPoints
                 });
             });
 
-            groupBuilder.MapGet("AutenticadoInfo",[Authorize] async ([FromServices] UserService userService, [FromBody] RequestToken requestToken) =>
+            groupBuilder.MapPost("AutenticadoInfo", async ([FromServices] UserService userService, [FromBody] RequestToken requestToken) =>
             {
                 var usuario = await userService.BuscarUserPorId(p => p.Token == requestToken.Token);
 
-                return Results.Ok(new UserResponse(usuario.Id,usuario.Email, usuario.Senha));
+                return Results.Ok(new UserResponse(usuario.Id,usuario.UserName,usuario.Email, usuario.Senha,usuario.NivelAcesso.TipoAcesso));
             });
         }
     }

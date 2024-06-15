@@ -1,4 +1,5 @@
-﻿using Agendamentos.Shared.Dados.Database;
+﻿using AgendamentoAPI.Response;
+using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Modelos.Modelos;
 using AgendamentosAPI.Shared.Dados.Database;
 using AgendamentosAPI.Shared.Models.Modelos;
@@ -19,7 +20,7 @@ namespace AgendamentoAPI.EndPoints
             {
                 var usuarios = await userService.ListarUsers();
 
-                return usuarios;
+                return Results.Ok(usuarios);
             });
 
             groupBuilder.MapGet("{id}", [Authorize] async ([FromServices] UserService userService, string id) =>

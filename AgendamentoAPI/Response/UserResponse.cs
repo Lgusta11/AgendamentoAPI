@@ -1,5 +1,5 @@
 ﻿namespace AgendamentoAPI.Response
 {
-    public record UserResponse(string Id, string Email, string Senha);
+    public record UserResponse(string Id,string UserName, string Email, string Senha, string? NivelAcesso);
    
 }

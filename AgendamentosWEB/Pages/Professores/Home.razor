@@ -74,7 +74,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var userInfo = await loginAPI.GetUserInfoAsync();
+        var userInfo = await loginAPI.GetUserRolesAsync();
         if (userInfo != null)
         {
             var userName = userInfo.UserName;

@@ -14,15 +14,17 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddAuthenticationCore();
 builder.Services.AddAuthorizationCore();
-builder.Services.AddScoped<AuthenticationStateProvider, LoginAPI>();
-builder.Services.AddScoped<LoginAPI>(sp => (LoginAPI)sp.GetRequiredService<AuthenticationStateProvider>());
+builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
+
+builder.Services.AddScoped(sp => (ApiAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());
+
+builder.Services.AddScoped<LoginAPI>();
 
 builder.Services.AddMudServices();
 builder.Services.AddRadzenComponents();
-builder.Services.AddBlazoredLocalStorage(); 
+builder.Services.AddBlazoredLocalStorage();
+
 builder.Services.AddScoped<JwtAuthorizationMessageHandler>();
-
-
 
 // Adicione o serviço de autenticação
 builder.Services.AddHttpClient("API", client => {
