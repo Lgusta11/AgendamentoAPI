@@ -66,7 +66,7 @@ namespace Agendamentos.EndPoints
                 equipamentoAAtualizar.Quantidade = equipamentoRequest.Quantidade;
                 dal.Atualizar(equipamentoAAtualizar);
                 return Results.Ok();
-            }).RequireAuthorization(new AuthorizeAttribute() { Roles = "Admin" });
+            });
 
         }
     }

@@ -108,6 +108,7 @@ namespace AgendamentosWEB.Services
                 Encoding.UTF8,
                 "application/json");
 
+
                 var requestInfo = await _httpClient.PostAsync("/auth/AutenticadoInfo", bodyJson);
 
                 if (!requestInfo.IsSuccessStatusCode)

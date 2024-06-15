@@ -1,6 +1,7 @@
 ﻿using AgendamentoAPI.Response;
 using AgendamentosWEB.Requests;
 using AgendamentosWEB.Response;
+using Blazored.LocalStorage;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
 
@@ -9,24 +10,41 @@ public class AgendamentosAPI
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<AgendamentosAPI> _logger;
-    public AgendamentosAPI(IHttpClientFactory factory, ILogger<AgendamentosAPI> logger)
+    private readonly ILocalStorageService _localStorageService;
+
+    public AgendamentosAPI(IHttpClientFactory factory, ILogger<AgendamentosAPI> logger, ILocalStorageService localStorage)
     {
         _httpClient = factory.CreateClient("API");
         _logger = logger;
+        _localStorageService = localStorage;
+
     }
 
     public async Task<ICollection<AgendamentoResponse>?> GetAgendamentosAsync()
     {
+        var savedtoken = await _localStorageService.GetItemAsync<string>("AuthToken");
+
+        _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", savedtoken);
+
+
         return await _httpClient.GetFromJsonAsync<ICollection<AgendamentoResponse>>("agendamentos");
     }
 
-    public async Task<ICollection<AgendamentoResponse>?> GetAgendamentosPorProfessorIdAsync(int professorId)
+    public async Task<ICollection<AgendamentoResponse>?> GetAgendamentosPorProfessorIdAsync(int id)
     {
-        return await _httpClient.GetFromJsonAsync<ICollection<AgendamentoResponse>>($"agendamentos/{professorId}");
+        var savedtoken = await _localStorageService.GetItemAsync<string>("AuthToken");
+
+        _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", savedtoken);
+
+        return await _httpClient.GetFromJsonAsync<ICollection<AgendamentoResponse>>($"agendamentos/{id}");
     }
 
     public async Task<HttpResponseMessage> AddAgendamentoAsync(AgendamentoRequest agendamento)
     {
+        var savedtoken = await _localStorageService.GetItemAsync<string>("AuthToken");
+
+        _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", savedtoken);
+
         try
         {
             return await _httpClient.PostAsJsonAsync("agendamentos", agendamento);
@@ -39,46 +57,22 @@ public class AgendamentosAPI
     }
     public async Task DeleteAgendamentoAsync(int id)
     {
+        var savedtoken = await _localStorageService.GetItemAsync<string>("AuthToken");
+
+        _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", savedtoken);
+
         await _httpClient.DeleteAsync($"agendamentos/{id}");
     }
 
     public async Task UpdateAgendamentoAsync(AgendamentosRequestEdit agendamento)
     {
+        var savedtoken = await _localStorageService.GetItemAsync<string>("AuthToken");
+
+        _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", savedtoken);
+
         await _httpClient.PutAsJsonAsync($"agendamentos/{agendamento.Id}", agendamento);
     }
 
-    public async Task<string> GetNomeAulaAsync(int aulaId)
-    {
-        var response = await _httpClient.GetAsync($"aulas/{aulaId}");
-
-        if (response.IsSuccessStatusCode)
-        {
-            var aula = await response.Content.ReadFromJsonAsync<AulasResponse>();
-            return aula.Aula;
-        }
-
-        _logger.LogWarning("Não foi possível recuperar o nome da aula {AulaId}", aulaId);
-        return null;
-    }
-
-    public async Task<string> GetNomeEquipamentoAsync(int equipamentoId)
-    {
-        var response = await _httpClient.GetAsync($"equipamentos/{equipamentoId}");
-
-        if (response.IsSuccessStatusCode)
-        {
-            var equipamento = await response.Content.ReadFromJsonAsync<EquipamentoResponse>();
-            return equipamento.Nome;
-        }
-
-        _logger.LogWarning("Não foi possível recuperar o nome do equipamento {EquipamentoId}", equipamentoId);
-        return null;
-    }
-
-    public async Task<InfoPessoaResponse> GetUserInfoAsync()
-    {
-        var response = await _httpClient.GetAsync("auth/manage/info");
-        return await response.Content.ReadFromJsonAsync<InfoPessoaResponse>();
-    }
+   
 
 }

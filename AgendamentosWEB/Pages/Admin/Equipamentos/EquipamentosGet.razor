@@ -63,7 +63,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        equipamentos = await equipamentosAPI.GetEquipamentosAsync();
+        try
+        {
+            equipamentos = await equipamentosAPI.GetEquipamentosAsync();
+            if (equipamentos != null)
+            {
+                equipamentos = new List<EquipamentoResponse>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ocorreu um erro: {ex.Message}");
+        }
     }
 
     private bool FilterFunc(EquipamentoResponse equipamento)

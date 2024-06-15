@@ -13,7 +13,7 @@
                     <MudText Typo="Typo.h6" Class="px-4" Style="color:white;">Olá, @authState.User.Identity.Name</MudText>
                     <MudText Typo="Typo.body2" Class="px-4 mud-text-primary" Style="color:white;">Sistema de Agendamento AFS</MudText>
                     <MudDivider Class="my-2" />
-                    @if (roleInfo.Equals("Gestor"))
+                    @if (roleInfo != null && roleInfo.Equals("Gestor"))
                     {
                         <MudNavLink Href="/admin/home" Icon="@Icons.Material.Filled.Home" Style="color:white;">Home</MudNavLink>
                         <MudNavGroup Title="Professores" Icon="@Icons.Material.Filled.People" Style="color:white;" Expanded="true">
@@ -29,7 +29,7 @@
                             <MudNavLink Href="/admin/agendamentos/cadastrar" Icon="@Icons.Material.Filled.AddCircle" Style="color:white;">Realizar Agendamento</MudNavLink>
                         </MudNavGroup>
                     }
-                    else if (roleInfo.Equals("Professores"))
+                    else if (roleInfo != null && roleInfo.Equals("Professor"))
                     {
                         <MudNavLink Href="/home" Icon="@Icons.Material.Filled.Home" Style="color:white;">Home</MudNavLink>
                         <MudNavGroup Title="Agendamentos" Icon="@Icons.Material.Filled.CalendarToday" Expanded="true">
@@ -54,14 +54,22 @@
 
     protected override async Task OnInitializedAsync()
     {
-        authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState?.User;
-
-        if (user?.Identity?.IsAuthenticated == true)
+        try
         {
-            var role = await loginAPI.GetUserRolesAsync();
+            authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState?.User;
 
-            roleInfo = role.NivelAcesso;
+            if (user?.Identity?.IsAuthenticated == true)
+            {
+                var role = await loginAPI.GetUserRolesAsync();
+
+                roleInfo = role?.NivelAcesso;
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log the error
+            Console.WriteLine($"Erro ao obter estado de autenticação: {ex.Message}");
         }
     }
 }

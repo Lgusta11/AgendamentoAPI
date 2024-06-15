@@ -91,20 +91,11 @@ builder.Services.AddAuthentication(x =>
 
 
 // Configuração do CORS
-builder.Services.AddCors(
-    options => options.AddPolicy(
-        "wasm",
-            policy => policy.WithOrigins(builder.Configuration["BackendUrl"] ?? "https://docker-aspnet-afs.onrender.com",
-            builder.Configuration["FrontendUrl"] ?? "https://localhost:7056")
-            .AllowAnyMethod()
-            .SetIsOriginAllowed(pol => true)
-            .AllowAnyHeader()
-            .AllowCredentials()));
-
+builder.Services.AddCors(options
+  => options.AddPolicy(name: "_police", builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 var app = builder.Build();
 
-app.UseCors("wasm");
-
+app.UseCors("_police");
 // Configuração de Middleware
 app.UseAuthentication();
 app.UseAuthorization();
