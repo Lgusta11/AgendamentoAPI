@@ -21,8 +21,8 @@
             </HeaderContent>
             <RowTemplate Context="professor">
                 <MudTd DataLabel="Id">@professor.Id</MudTd>
-                <MudTd DataLabel="Nome">@professor.Nome</MudTd>
-                <MudTd DataLabel="Email">@professor.email</MudTd>
+                <MudTd DataLabel="Nome">@professor.UserName</MudTd>
+                <MudTd DataLabel="Email">@professor.Email</MudTd>
                 <MudTd>
                     <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" OnClick="@(() => NavManager.NavigateTo($"/admin/professores/editar/{professor.Id}"))" />
                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteProfessorAsync(professor.Id))" />
@@ -48,7 +48,7 @@
     <MudSpacer />
 
     <div style="min-width:200px;">
-        <MudText Inline="true" Class="align-self-center">Selected: @selectedItem?.Nome</MudText>
+        <MudText Inline="true" Class="align-self-center">Selected: @selectedItem?.UserName</MudText>
     </div>
 </div>
 
@@ -70,12 +70,12 @@
     {
         if (string.IsNullOrWhiteSpace(searchString))
             return true;
-        if (professores.Nome.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        if (professores.UserName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
         return false;
     }
 
-    private async Task DeleteProfessorAsync(int id)
+    private async Task DeleteProfessorAsync(string id)
     {
         bool confirm = await JS.InvokeAsync<bool>("confirm", "Você realmente quer excluir este professor?");
         if (confirm)

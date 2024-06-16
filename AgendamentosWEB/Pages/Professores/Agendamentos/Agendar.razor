@@ -113,12 +113,7 @@
             var userInfo = await loginAPI.GetUserRolesAsync();
             if (userInfo is not null)
             {
-                var userName = userInfo.UserName;
-                var professorId = await professoresAPI.GetProfessorIdByUserNameAsync(userName);
-                if (professorId.HasValue)
-                {
-                    professorLogado = await professoresAPI.GetProfessorPorIdAsync(professorId.Value);
-                }
+                professorLogado = await professoresAPI.GetProfessorPorIdAsync(userInfo.Id);
             }
             aulas = await aulasAPI.GetAulasAsync() ?? new List<AulasResponse>();
             equipamentos = await equipamentosAPI.GetEquipamentosAsync() ?? new List<EquipamentoResponse>();

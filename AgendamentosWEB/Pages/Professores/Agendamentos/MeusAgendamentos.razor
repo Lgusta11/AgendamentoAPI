@@ -8,7 +8,7 @@
 
 @if (agendamentos == null)
 {
-    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    @* <MudProgressCircular Color="Color.Primary" Indeterminate="true" /> *@
     <center>
         <div style="display: flex; justify-content: center; align-items: center; height: 50vh; width: 100%; max-width: 100vw;">
             <MudContainer Class="d-flex flex-column align-items-center justify-content-center text-center p-2" style="max-width: 90%;">
@@ -78,10 +78,10 @@ else
         if (userInfo != null)
         {
             var userName = userInfo.UserName;
-            var professorId = await professoresId.GetProfessorIdByUserNameAsync(userName);
-            if (professorId.HasValue)
+
+            if (!string.IsNullOrEmpty(userInfo.Id))
             {
-                listaCompleta = await agendamentosAPI.GetAgendamentosPorProfessorIdAsync(professorId.Value);
+                listaCompleta = await agendamentosAPI.GetAgendamentosPorProfessorIdAsync(userInfo.Id);
             }
             else
             {
@@ -116,11 +116,10 @@ else
             var userInfo = await loginAPI.GetUserRolesAsync();
             if (userInfo != null)
             {
-                var userName = userInfo.UserName;
-                var professorId = await professoresId.GetProfessorIdByUserNameAsync(userName);
-                if (professorId.HasValue)
+                var professorId = await professoresId.GetProfessorPorIdAsync(userInfo.Id);
+                if (!string.IsNullOrEmpty(professorId.Id))
                 {
-                    listaCompleta = await agendamentosAPI.GetAgendamentosPorProfessorIdAsync(professorId.Value);
+                    listaCompleta = await agendamentosAPI.GetAgendamentosPorProfessorIdAsync(userInfo.Id);
                 }
             }
             // Atualize a lista de agendamentos na página

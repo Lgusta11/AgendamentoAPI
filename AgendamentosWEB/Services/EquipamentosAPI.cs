@@ -1,7 +1,9 @@
 ﻿using AgendamentosWEB.Requests;
 using AgendamentosWEB.Response;
 using Blazored.LocalStorage;
+using System.Collections.Generic;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace AgendamentosWEB.Services;
 public class EquipamentosAPI
@@ -17,11 +19,20 @@ public class EquipamentosAPI
 
     public async Task<ICollection<EquipamentoResponse>?> GetEquipamentosAsync()
     {
+        Console.WriteLine("Cheguei");
         var savedToken = await _localStorageService.GetItemAsync<string>("AuthToken");
 
         _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", savedToken);
 
-        return await _httpClient.GetFromJsonAsync<ICollection<EquipamentoResponse>>("equipamentos");
+        var request = await _httpClient.GetAsync("/equipamentos");
+
+        if (!request.IsSuccessStatusCode) throw new Exception("Erro ao buscar equipamentos na api!");
+
+        var response = await request.Content.ReadFromJsonAsync<ICollection<EquipamentoResponse>>();
+
+        Console.WriteLine("Buscando...");
+
+        return response;
     }
 
     public async Task<EquipamentoResponse?> GetEquipamentoPorIdAsync(int id)
@@ -29,7 +40,14 @@ public class EquipamentosAPI
         var savedToken = await _localStorageService.GetItemAsync<string>("AuthToken");
 
         _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", savedToken);
-        return await _httpClient.GetFromJsonAsync<EquipamentoResponse>($"equipamentos/{id}");
+
+        var request = await _httpClient.GetAsync($"/equipamentos/{id}");
+
+        if (!request.IsSuccessStatusCode) throw new Exception("Erro ao buscar equipamentos na api!");
+
+        var response = await request.Content.ReadFromJsonAsync<EquipamentoResponse>();
+
+        return response;
     }
 
     public async Task AddEquipamentoAsync(EquipamentoRequest equipamento)

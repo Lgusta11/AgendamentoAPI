@@ -1,4 +1,4 @@
 ﻿namespace AgendamentosWEB.Requests
 {
-    public record ProfessoresRequestEdit(int Id, string nome, string email);
+    public record ProfessoresRequestEdit(string Id, string Nome, string Email);
 }

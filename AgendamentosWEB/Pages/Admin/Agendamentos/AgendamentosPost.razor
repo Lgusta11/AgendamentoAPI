@@ -31,7 +31,7 @@
                                 <MudSelect T="ProfessoresResponse" Label="Escolha o Professor" Required="true" @bind-Value="agendamentoModel.ProfessorSelecionado">
                                     @foreach (var professor in professores)
                                     {
-                                        <MudSelectItem Value="professor">@professor.Nome</MudSelectItem>
+                                        <MudSelectItem Value="professor">@professor.UserName</MudSelectItem>
                                     }
                                 </MudSelect>
                                 <MudSelect T="AulasResponse" MultiSelection="true" SelectAll="true" SelectAllText="Selecionar todas as aulas" AdornmentIcon="@Icons.Material.Filled.Search" Label="Escolha as aulas" Required="true" SelectedValuesChanged="@(values => UpdateSelectedAulas(values))">

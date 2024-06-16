@@ -59,6 +59,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         listaCompleta = await agendamentosAPI.GetAgendamentosAsync();
+
         if (listaCompleta is not null)
         {
             listaCompleta = listaCompleta.OrderByDescending(a => a.Id).ToList();

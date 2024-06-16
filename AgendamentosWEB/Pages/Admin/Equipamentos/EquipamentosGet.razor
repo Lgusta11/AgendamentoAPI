@@ -66,7 +66,7 @@
         try
         {
             equipamentos = await equipamentosAPI.GetEquipamentosAsync();
-            if (equipamentos != null)
+            if (equipamentos is null)
             {
                 equipamentos = new List<EquipamentoResponse>();
             }

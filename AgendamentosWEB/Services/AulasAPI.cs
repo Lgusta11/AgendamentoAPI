@@ -21,7 +21,13 @@ public class AulasAPI
 
         _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", savedtoken);
 
-        return await _httpClient.GetFromJsonAsync<ICollection<AulasResponse>>("aulas");
+        var request = await _httpClient.GetAsync("/aulas");
+
+        if (!request.IsSuccessStatusCode) throw new Exception("Erro ao listar aulas da API!");
+
+        var response = await request.Content.ReadFromJsonAsync<ICollection<AulasResponse>>();
+
+        return response;
     }
 
     public async Task AddAulaAsync(AulasRequest aula)
@@ -46,7 +52,14 @@ public class AulasAPI
         var savedtoken = await _localStorageService.GetItemAsync<string>("AuthToken");
 
         _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", savedtoken);
-        return await _httpClient.GetFromJsonAsync<AulasResponse>($"aulas/{id}");
+
+        var request = await _httpClient.GetAsync("/aulas");
+
+        if (!request.IsSuccessStatusCode) throw new Exception("Erro ao listar aula da API!");
+
+        var response = await request.Content.ReadFromJsonAsync<AulasResponse>();
+
+        return response;
     }
 
     public async Task UpdateAulaAsync(AulasRequestEdit aula)

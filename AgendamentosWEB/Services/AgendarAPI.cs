@@ -4,6 +4,7 @@ using AgendamentosWEB.Response;
 using Blazored.LocalStorage;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace AgendamentosWEB.Services;
 public class AgendamentosAPI
@@ -26,17 +27,32 @@ public class AgendamentosAPI
 
         _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", savedtoken);
 
+        var request = await _httpClient.GetAsync("/agendamentos");
 
-        return await _httpClient.GetFromJsonAsync<ICollection<AgendamentoResponse>>("agendamentos");
+        if (!request.IsSuccessStatusCode) throw new Exception("Erro ao buscar agendamentos na api");
+
+        var response = await request.Content.ReadFromJsonAsync<ICollection<AgendamentoResponse>>();
+
+        Console.WriteLine(JsonSerializer.Serialize(response));
+
+        return response;
     }
 
-    public async Task<ICollection<AgendamentoResponse>?> GetAgendamentosPorProfessorIdAsync(int id)
+    public async Task<ICollection<AgendamentoResponse>?> GetAgendamentosPorProfessorIdAsync(string id)
     {
         var savedtoken = await _localStorageService.GetItemAsync<string>("AuthToken");
 
         _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", savedtoken);
 
-        return await _httpClient.GetFromJsonAsync<ICollection<AgendamentoResponse>>($"agendamentos/{id}");
+        var request = await _httpClient.GetAsync($"/agendamentos/{id}");
+
+        if (!request.IsSuccessStatusCode) throw new Exception("Erro ao buscar agendamentos na api");
+
+        var response = await request.Content.ReadFromJsonAsync<ICollection<AgendamentoResponse>>();
+
+        Console.WriteLine(JsonSerializer.Serialize(response));
+
+        return response;
     }
 
     public async Task<HttpResponseMessage> AddAgendamentoAsync(AgendamentoRequest agendamento)
@@ -51,7 +67,7 @@ public class AgendamentosAPI
         }
         catch (Exception ex)
         {
-           
+
             throw new Exception("Erro ao adicionar agendamento", ex);
         }
     }
@@ -73,6 +89,6 @@ public class AgendamentosAPI
         await _httpClient.PutAsJsonAsync($"agendamentos/{agendamento.Id}", agendamento);
     }
 
-   
+
 
 }

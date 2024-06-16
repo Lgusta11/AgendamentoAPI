@@ -23,10 +23,7 @@ namespace AgendamentoAPI.EndPoints
 
                 dal.Adicionar(user);
 
-                return Results.Ok(new
-                {
-                    Status = "Adicionado com sucesso!"
-                });
+                return Results.Ok(user);
 
             });
 
