@@ -51,24 +51,18 @@ public class ProfessoresAPI
 
         _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", savedtoken);
 
-        await _httpClient.DeleteAsync($"professores/{id}");
+        await _httpClient.DeleteAsync($"users/{id}");
     }
 
-    public async Task UpdateProfessorAsync(ProfessoresRequestEdit professor)
+    public async Task UpdateProfessorAsync(UserRequestEdit user)
     {
         var savedtoken = await _localStorageService.GetItemAsync<string>("AuthToken");
 
         _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", savedtoken);
 
-        await _httpClient.PutAsJsonAsync($"professores/{professor.Id}", professor);
+
+        await _httpClient.PutAsJsonAsync($"users/{user.Id}", user);
     }
 
-    public async Task<string> GetProfessorIdByUserNameAsync(string userName)
-    {
-        var savedtoken = await _localStorageService.GetItemAsync<string>("AuthToken");
-
-        _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", savedtoken);
-
-        return await _httpClient.GetFromJsonAsync<string?>($"professores/id/{userName}");
+    
     }
-}

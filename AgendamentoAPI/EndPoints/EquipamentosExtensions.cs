@@ -55,18 +55,18 @@ namespace Agendamentos.EndPoints
                 return Results.NoContent();
             });
 
-            groupBuilder.MapPut("{id}",[Authorize(Roles = "Gestor")] ([FromServices] DAL<Equipamentos> dal, [FromBody] EquipamentosRequestEdit equipamentoRequest) =>
-            {
-                var equipamentoAAtualizar = dal.RecuperarPor(e => e.Id == equipamentoRequest.Id);
-                if (equipamentoAAtualizar is null)
+                groupBuilder.MapPut("{id}",[Authorize(Roles = "Gestor")] ([FromServices] DAL<Equipamentos> dal, [FromBody] EquipamentosRequestEdit equipamentoRequest) =>
                 {
-                    return Results.NotFound();
-                }
-                equipamentoAAtualizar.Nome = equipamentoRequest.Nome;
-                equipamentoAAtualizar.Quantidade = equipamentoRequest.Quantidade;
-                dal.Atualizar(equipamentoAAtualizar);
-                return Results.Ok();
-            });
+                    var equipamentoAAtualizar = dal.RecuperarPor(e => e.Id == equipamentoRequest.Id);
+                    if (equipamentoAAtualizar is null)
+                    {
+                        return Results.NotFound();
+                    }
+                    equipamentoAAtualizar.Nome = equipamentoRequest.Nome;
+                    equipamentoAAtualizar.Quantidade = equipamentoRequest.Quantidade;
+                    dal.Atualizar(equipamentoAAtualizar);
+                    return Results.Ok();
+                });
 
         }
     }

@@ -12,18 +12,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AgendamentosAPI.Shared.Dados.Migrations
 {
     [DbContext(typeof(AgendamentosContext))]
-    [Migration("20240615022936_AddColumnToken")]
-    partial class AddColumnToken
+    [Migration("20240616192350_Projetoinicia")]
+    partial class Projetoinicia
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.4")
-                .HasAnnotation("Proxies:ChangeTracking", false)
-                .HasAnnotation("Proxies:CheckEquality", false)
-                .HasAnnotation("Proxies:LazyLoading", true)
+                .HasAnnotation("ProductVersion", "8.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -129,7 +126,7 @@ namespace AgendamentosAPI.Shared.Dados.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "918b0a58-4334-4af7-92a5-1e5d39064f88",
+                            Id = "db731824-8702-423b-bbed-97aa37ca9494",
                             TipoAcesso = "Gestor"
                         });
                 });
@@ -164,8 +161,8 @@ namespace AgendamentosAPI.Shared.Dados.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "718dcaf6-1cb1-41e6-b747-8466f6a05134",
-                            AcessoId = "918b0a58-4334-4af7-92a5-1e5d39064f88",
+                            Id = "7186557b-7a87-456c-bd10-7e1b829ffc1f",
+                            AcessoId = "db731824-8702-423b-bbed-97aa37ca9494",
                             Email = "root@gmail.com",
                             Senha = "Soeuseisoeusei",
                             UserName = "root"

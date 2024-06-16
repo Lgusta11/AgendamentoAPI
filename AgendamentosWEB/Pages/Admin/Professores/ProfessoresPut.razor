@@ -15,7 +15,7 @@
                 <MudItem xs="12" sm="7">
                     <MudCard>
                         <MudCardContent>
-                            <MudTextField @bind-Value="model.Nome" Label="Nome" Variant="@MudBlazor.Variant.Text" FullWidth InputType="InputType.Text" />
+                            <MudTextField @bind-Value="model.UserName" Label="Nome" Variant="@MudBlazor.Variant.Text" FullWidth InputType="InputType.Text" />
                             <MudTextField @bind-Value="model.Email" Label="Email" Variant="@MudBlazor.Variant.Text" FullWidth InputType="InputType.Email" />
                         </MudCardContent>
                         <MudCardActions>
@@ -72,7 +72,7 @@
         public string? Id { get; set; } 
 
         [Required(ErrorMessage = "O nome é obrigatório.")]
-        public string? Nome { get; set; }
+        public string? UserName { get; set; }
 
         [Required(ErrorMessage = "o email é obrigatório.")]
         public string? Email { get; set; }
@@ -87,7 +87,7 @@
             model = new ProfessorFormModel
                 {
                     Id = professorData.Id, 
-                    Nome = professorData.UserName,
+                    UserName = professorData.UserName,
                     Email = professorData.Email,
                 };
         }
@@ -98,13 +98,13 @@
     {
         try
         {
-            var requestEdit = new ProfessoresRequestEdit(model.Id, model.Nome!, model.Email);
+            var requestEdit = new UserRequestEdit(model.Id, model.UserName!, model.Email);
             await professoresAPI.UpdateProfessorAsync(requestEdit);
-            await JS.InvokeVoidAsync("alert", "Equipamento atualizado com sucesso!");
-            model = new ProfessorFormModel // Crie um novo ProfessorFormModel aqui
+            await JS.InvokeVoidAsync("alert", "Professor atualizado com sucesso!");
+            model = new ProfessorFormModel
                 {
                     Id = model.Id,
-                    Nome = model.Nome,
+                    UserName = model.UserName,
                     Email = model.Email
                 };
             success = true;
@@ -113,10 +113,11 @@
         }
         catch (Exception ex)
         {
-            apiError = "Erro ao atualizar equipamento: " + ex.Message;
+            apiError = "Erro ao atualizar professor: " + ex.Message;
             success = false;
         }
     }
+
 
 }
 

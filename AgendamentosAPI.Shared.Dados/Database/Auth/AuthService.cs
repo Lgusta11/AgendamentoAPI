@@ -7,7 +7,7 @@ namespace AgendamentosAPI.Shared.Dados.Database.Auth
     public class AuthService
     {
         private readonly AgendamentosContext _dbContext;
-        public AuthService(AgendamentosContext dbContext) 
+        public AuthService(AgendamentosContext dbContext)
         {
             _dbContext = dbContext;
         }
@@ -23,7 +23,7 @@ namespace AgendamentosAPI.Shared.Dados.Database.Auth
         {
             var usuarioAcesso = await _dbContext.Users
                 .Include(p => p.NivelAcesso)
-                .Where(p => p.Email == email &&  p.Senha == senha)
+                .Where(p => p.Email == email && p.Senha == senha)
                 .Select(p => p.NivelAcesso!.TipoAcesso)
                 .FirstAsync();
 

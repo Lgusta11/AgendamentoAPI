@@ -5,11 +5,11 @@ namespace AgendamentosAPI.Shared.Models.Modelos
 {
     public class User
     {
-        public string? Id { get; private set; }
-        public string? UserName { get; private set; }
-        public string? Email { get; private set; }
-        public string? Senha { get; private set; }
-        public string? AcessoId { get; private set; }
+        public string? Id { get;  set; }
+        public string? UserName { get;  set; }
+        public string? Email { get;  set; }
+        public string? Senha { get;  set; }
+        public string? AcessoId { get;  set; }
         public string? Token { get; set; }
         public NivelAcesso? NivelAcesso { get; set; }
         public ICollection<Agendamento>? Agendamentos { get; set; }

@@ -12,15 +12,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AgendamentosAPI.Shared.Dados.Migrations
 {
     [DbContext(typeof(AgendamentosContext))]
-    [Migration("20240614031036_NovosRelacionamentos")]
-    partial class NovosRelacionamentos
+    [Migration("20240616185744_Projetoinicial")]
+    partial class Projetoinicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("ProductVersion", "8.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -126,7 +126,7 @@ namespace AgendamentosAPI.Shared.Dados.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "7334c9b6-fda8-4e99-9c61-bfcb272483c7",
+                            Id = "9e5ddf95-0954-4d64-8cf2-edbf36ff23ca",
                             TipoAcesso = "Gestor"
                         });
                 });
@@ -141,12 +141,18 @@ namespace AgendamentosAPI.Shared.Dados.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Senha")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Token")
                         .HasColumnType("text");
 
                     b.Property<string>("UserName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -158,10 +164,10 @@ namespace AgendamentosAPI.Shared.Dados.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "90c7a31e-572e-4007-9f36-aca3b660dbbc",
-                            AcessoId = "7334c9b6-fda8-4e99-9c61-bfcb272483c7",
+                            Id = "669c2647-e5e7-46db-b7fe-d15109c5d02f",
+                            AcessoId = "9e5ddf95-0954-4d64-8cf2-edbf36ff23ca",
                             Email = "root@gmail.com",
-                            Senha = "Soeuseisoeusei",
+                            Senha = "bnt8Ssp+p4gwubN2dXeYXpNURr/qr5QbPmpylnWgLtP0qZay",
                             UserName = "root"
                         });
                 });

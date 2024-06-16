@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AgendamentosAPI.Shared.Dados.Migrations
 {
     /// <inheritdoc />
-    public partial class NovosRelacionamentos : Migration
+    public partial class Projetoinicial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -57,10 +57,11 @@ namespace AgendamentosAPI.Shared.Dados.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    UserName = table.Column<string>(type: "text", nullable: true),
-                    Email = table.Column<string>(type: "text", nullable: true),
-                    Senha = table.Column<string>(type: "text", nullable: true),
-                    AcessoId = table.Column<string>(type: "text", nullable: false)
+                    UserName = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    Senha = table.Column<string>(type: "text", nullable: false),
+                    AcessoId = table.Column<string>(type: "text", nullable: false),
+                    Token = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -133,12 +134,12 @@ namespace AgendamentosAPI.Shared.Dados.Migrations
             migrationBuilder.InsertData(
                 table: "NivelAcessos",
                 columns: new[] { "Id", "TipoAcesso" },
-                values: new object[] { "7334c9b6-fda8-4e99-9c61-bfcb272483c7", "Gestor" });
+                values: new object[] { "9e5ddf95-0954-4d64-8cf2-edbf36ff23ca", "Gestor" });
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "AcessoId", "Email", "Senha", "UserName" },
-                values: new object[] { "90c7a31e-572e-4007-9f36-aca3b660dbbc", "7334c9b6-fda8-4e99-9c61-bfcb272483c7", "root@gmail.com", "Soeuseisoeusei", "root" });
+                columns: new[] { "Id", "AcessoId", "Email", "Senha", "Token", "UserName" },
+                values: new object[] { "669c2647-e5e7-46db-b7fe-d15109c5d02f", "9e5ddf95-0954-4d64-8cf2-edbf36ff23ca", "root@gmail.com", "bnt8Ssp+p4gwubN2dXeYXpNURr/qr5QbPmpylnWgLtP0qZay", null, "root" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AgendamentoAulas_AulaId",

@@ -1,4 +1,5 @@
-﻿using AgendamentoAPI.Response;
+﻿using AgendamentoAPI.Requests;
+using AgendamentoAPI.Response;
 using Agendamentos.Shared.Dados.Database;
 using Agendamentos.Shared.Modelos.Modelos;
 using AgendamentosAPI.Shared.Dados.Database;
@@ -54,6 +55,23 @@ namespace AgendamentoAPI.EndPoints
                 dal.Deletar(user);
                 return Results.NoContent();
             });
+
+            groupBuilder.MapPut("{id}", [Authorize(Roles = "Gestor")] async ([FromServices] DAL<User> dal, string id, [FromBody] UserRequestEdit userRequestEdit) =>
+            {
+                var existingUser = dal.RecuperarPor(u => u.Id == id);
+                if (existingUser == null)
+                {
+                    return Results.NotFound();
+                }
+
+                existingUser.UserName = userRequestEdit.UserName;
+                existingUser.Email = userRequestEdit.Email;
+
+                dal.Atualizar(existingUser);
+
+                return Results.NoContent();
+            });
+
         }
 
     }
