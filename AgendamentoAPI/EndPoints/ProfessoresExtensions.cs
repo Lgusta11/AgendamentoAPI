@@ -1,11 +1,5 @@
-﻿using Agendamentos.Requests;
-using Agendamentos.Response;
-using Agendamentos.Shared.Dados.Database;
-using Agendamentos.Shared.Modelos.Modelos;
-using AgendamentosAPI.Shared.Dados;
-using AgendamentosAPI.Shared.Models.Modelos;
+﻿using AgendamentosAPI.Shared.Dados;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 

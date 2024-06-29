@@ -48,7 +48,7 @@ namespace AgendamentoAPI.EndPoints
             {
                 var usuario = await userService.BuscarUserPorId(p => p.Token == requestToken.Token);
 
-                return Results.Ok(new UserResponse(usuario.Id,usuario.UserName,usuario.Email, usuario.Senha,usuario.NivelAcesso.TipoAcesso));
+                return Results.Ok(new UserResponse(usuario.Id!,usuario.UserName!,usuario.Email!, usuario.Senha!,usuario.NivelAcesso!.TipoAcesso));
             });
         }
     }

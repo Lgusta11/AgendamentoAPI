@@ -56,7 +56,7 @@ namespace AgendamentoAPI.EndPoints
                 return Results.NoContent();
             });
 
-            groupBuilder.MapPut("{id}", [Authorize(Roles = "Gestor")] async ([FromServices] DAL<User> dal, string id, [FromBody] UserRequestEdit userRequestEdit) =>
+            groupBuilder.MapPut("{id}", [Authorize(Roles = "Gestor")]  ([FromServices] DAL<User> dal, string id, [FromBody] UserRequestEdit userRequestEdit) =>
             {
                 var existingUser = dal.RecuperarPor(u => u.Id == id);
                 if (existingUser == null)

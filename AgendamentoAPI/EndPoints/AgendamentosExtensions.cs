@@ -17,7 +17,7 @@ namespace Agendamentos.EndPoints
             var groupBuilder = app.MapGroup("agendamentos")
                 .WithTags("Agendamentos");
 
-            groupBuilder.MapGet("", [Authorize(Roles = "Gestor")] async ([FromServices] AgendamentoService agendamentoService) =>
+            groupBuilder.MapGet("", [Authorize(Roles = "Gestor")] ([FromServices] AgendamentoService agendamentoService) =>
              {
                  var listaDeAgendamentos = agendamentoService.ListarAgendamentos();
 
@@ -35,9 +35,9 @@ namespace Agendamentos.EndPoints
                          var agendamentoResponse = new AgendamentoResponse(
                              agendamento.Id,
                              agendamento.Data,
-                             aulaAgendada.Aula?.Aula,
-                             agendamento.Equipamento?.Nome,
-                             agendamento.Professor?.UserName
+                             aulaAgendada.Aula?.Aula!,
+                             agendamento.Equipamento?.Nome!,
+                             agendamento.Professor?.UserName!
                          );
                          listaDeAgendamentosResponse.Add(agendamentoResponse);
                      }
@@ -47,7 +47,7 @@ namespace Agendamentos.EndPoints
              });
 
 
-            groupBuilder.MapGet("{professorId}", async ([FromServices] AgendamentoService agendamentoService, string professorId) =>
+            groupBuilder.MapGet("{professorId}", ([FromServices] AgendamentoService agendamentoService, string professorId) =>
             {
                 var agendamentosDoProfessor = agendamentoService.
                 ListarAgendamentos()
@@ -66,9 +66,9 @@ namespace Agendamentos.EndPoints
                         var agendamentoResponse = new AgendamentoResponse(
                             agendamento.Id,
                             agendamento.Data,
-                            aulaAgendada.Aula?.Aula,
-                            agendamento.Equipamento?.Nome,
-                            agendamento.Professor?.UserName
+                            aulaAgendada.Aula?.Aula!,
+                            agendamento.Equipamento?.Nome!,
+                            agendamento.Professor?.UserName!
                         );
                         listaDeAgendamentosResponse.Add(agendamentoResponse);
                     }
@@ -76,83 +76,72 @@ namespace Agendamentos.EndPoints
                 return Results.Ok(listaDeAgendamentosResponse);
             });
 
-
-
-            groupBuilder.MapPost("", async (
-       [FromServices] DAL<Agendamento> dal,
-       [FromServices] DAL<Equipamentos> EquipamentosDal,
-       [FromBody] AgendamentoRequest agendamentoRequest
-      ) =>
+            groupBuilder.MapPost("", ([FromServices] DAL<Agendamento> dal,
+                                       [FromServices] DAL<Equipamentos> EquipamentosDal,
+                                       [FromBody] AgendamentoRequest agendamentoRequest,
+                                       [FromServices] AgendamentosContext agendamentoContext
+                                       ) =>
             {
-                if (agendamentoRequest == null)
+                List<string> response = [];
+
+                try
                 {
-                    return Results.BadRequest("O pedido de agendamento é nulo.");
-                }
+                    if (agendamentoRequest is null) throw new Exception("O agendamento não pode ser nulo!");
 
-                if (agendamentoRequest.AulaIds == null || !agendamentoRequest.AulaIds.Any())
-                {
-                    return Results.BadRequest("Nenhuma aula foi fornecida no pedido de agendamento.");
-                }
-
-                var equipamento = await EquipamentosDal.RecuperarPorAsync(e => e.Id == agendamentoRequest.EquipamentoId);
-
-                if (equipamento == null)
-                {
-                    return Results.BadRequest("O equipamento não foi encontrado.");
-                }
-
-                List<string> errors = new List<string>();
-                bool agendamentoRealizado = false;
-
-                // Convertendo a data para UTC
-                var dataAgendamento = DateTime.SpecifyKind(agendamentoRequest.Data, DateTimeKind.Utc);
-
-                foreach (var aulaId in agendamentoRequest.AulaIds)
-                {
-                    var agendamentoExistenteProfessor = dal.Listar(a => a.ProfessorId == agendamentoRequest.ProfessorId &&
-                                                                        a.Data == dataAgendamento &&
-                                                                        a.EquipamentoId == agendamentoRequest.EquipamentoId &&
-                                                                        a.AgendamentoAulas.Any(aa => aa.AulaId == aulaId));
-                    if (agendamentoExistenteProfessor.Any())
+                    foreach (var aula in agendamentoRequest.AulaIds)
                     {
-                        errors.Add($"Não foi possível fazer o agendamento da aula {aulaId} neste equipamento e data.");
-                        continue;
-                    }
+                        var agendamentoExists = agendamentoContext.Agendamentos
+                            .Where(p => p.AulaId == aula)
+                            .Where(p => p.ProfessorId == agendamentoRequest.ProfessorId)
+                            .Where(p => p.EquipamentoId == agendamentoRequest.EquipamentoId)
+                            .Where(p => p.Data.Date == agendamentoRequest.Data.Date)
+                            .Any();
 
-                    try
-                    {
-                        var agendamento = new Agendamento
+                        if (agendamentoExists)
                         {
-                            Data = dataAgendamento,
-                            EquipamentoId = agendamentoRequest.EquipamentoId,
-                            ProfessorId = agendamentoRequest.ProfessorId
-                        };
-                        agendamento.AgendamentoAulas.Add(new AgendamentoAula { AulaId = aulaId });
-                        dal.Adicionar(agendamento);
-                        agendamentoRealizado = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        errors.Add($"Erro ao criar agendamento para a aula {aulaId}: {ex.Message}");
-                        if (ex.InnerException != null)
+                            response.Add("Este agendamento já existe!");
+                        }
+                        else
                         {
-                            errors.Add($"Detalhes internos: {ex.InnerException.Message}");
+                            var equipamento = agendamentoContext
+                              .Equipamentos.FirstOrDefault(p => p.Id == agendamentoRequest.EquipamentoId)!.Quantidade;
+
+                            var agendamentosCount = agendamentoContext.Agendamentos
+                            .Where(p => p.AulaId == aula)
+                            .Where(p => p.EquipamentoId == agendamentoRequest.EquipamentoId)
+                            .Where(p => p.Data.Date == agendamentoRequest.Data.Date)
+                            .Count();
+
+                            if (agendamentosCount >= equipamento)
+                            {
+                                response.Add("Equipamento insufuciente!");
+                            }
+                            else
+                            {
+                                Agendamento novoAgendamento = new Agendamento
+                                {
+                                    ProfessorId = agendamentoRequest.ProfessorId,
+                                    EquipamentoId = agendamentoRequest.EquipamentoId,
+                                    AulaId = aula,
+                                    Data = agendamentoRequest.Data,
+                                };
+
+                                novoAgendamento.AgendamentoAulas.Add(new AgendamentoAula { AulaId = aula });
+
+                                dal.Adicionar(novoAgendamento);
+
+                                response.Add("Agendamento realizado com sucesso!");
+                            }
                         }
                     }
-                }
 
-                if (errors.Any() && agendamentoRealizado)
-                {
-                    return Results.BadRequest("Foi possível fazer o agendamento de algumas aulas, mas ocorreram os seguintes erros: " + string.Join(", ", errors));
+                    return Results.Ok(response);
                 }
-                else if (errors.Any())
+                catch (Exception ex)
                 {
-                    return Results.BadRequest("Não foi possível fazer o agendamento de nenhuma aula. Os seguintes erros ocorreram: " + string.Join(", ", errors));
+                    return Results.BadRequest(new { Message = ex.Message });
                 }
-
-                return Results.Created();
             });
-
 
             groupBuilder.MapDelete("{id}", (
                 [FromServices] DAL<Agendamento> dal,

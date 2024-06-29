@@ -116,7 +116,7 @@ namespace AgendamentosWEB.Services
 
                 var response = await requestInfo.Content.ReadFromJsonAsync<InfoPessoaResponse>();
 
-                return response;
+                return response!;
             }
             catch (Exception ex)
             {

@@ -29,7 +29,7 @@ namespace Agendamentos.Shared.Dados.Database
             {
 
                 string connectionString =
-                 _configuration.GetConnectionString("DefaultConnection");
+                 _configuration.GetConnectionString("DefaultConnection")!;
                    
 
                 optionsBuilder
@@ -49,11 +49,7 @@ namespace Agendamentos.Shared.Dados.Database
             modelBuilder.Entity<User>().HasKey(p => p.Id);
             modelBuilder.Entity<NivelAcesso>().HasKey(p => p.Id);
 
-            modelBuilder.Entity<NivelAcesso>()
-                .HasData(new NivelAcesso(nivelAcessoId, "Gestor"));
-
-            modelBuilder.Entity<User>()
-                .HasData(new User(usuarioId, "root", "root@gmail.com", "Soeuseisoeusei", nivelAcessoId));
+        
 
             modelBuilder.Entity<User>()
                 .HasOne(p => p.NivelAcesso)
@@ -91,23 +87,7 @@ namespace Agendamentos.Shared.Dados.Database
             modelBuilder.Entity<AgendamentoAula>()
                 .HasOne(aa => aa.Aula)
                 .WithMany(a => a.AgendamentoAulas)
-                .HasForeignKey(aa => aa.AulaId);
-
-            // Configuração para converter todos os DateTime para UTC
-            var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
-                v => v.ToUniversalTime(),
-                v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
-
-            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-            {
-                var properties = entityType.ClrType.GetProperties()
-                    .Where(p => p.PropertyType == typeof(DateTime) || p.PropertyType == typeof(DateTime?));
-
-                foreach (var property in properties)
-                {
-                    modelBuilder.Entity(entityType.Name).Property(property.Name).HasConversion(dateTimeConverter);
-                }
-            }
+                .HasForeignKey(aa => aa.AulaId);     
         }
     }
 }

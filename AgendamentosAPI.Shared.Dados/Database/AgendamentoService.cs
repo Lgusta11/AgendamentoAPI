@@ -17,18 +17,15 @@ namespace AgendamentosAPI.Shared.Dados.Database
         {
             try
             {
-
                 var agendamentos = _agendamentosContext.Agendamentos
                 .AsNoTracking()
                 .Include(p => p.Professor)
                 .Include(p => p.Equipamento)
                 .Include(p => p.AgendamentoAulas)
-                .ThenInclude(aa => aa.Aula) // Inclui os detalhes da aula
+                .ThenInclude(aa => aa.Aula!)
                 .ToList();
 
-
                 return agendamentos;
-
             }
             catch (Exception ex)
             {
